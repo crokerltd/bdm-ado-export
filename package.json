@@ -1,0 +1,16 @@
+{
+  "description": "Azure DevOps Utility to send notification emails to workItem assignees",
+  "scripts": {
+    "build": "tsc",
+    "postinstall": "npm run build",
+    "start": "node dist/main.js"
+  },
+  "main": "main.js",
+  "dependencies": {
+    "@types/node": "^18.14.0",
+    "@types/nunjucks": "^3.2.2",
+    "azure-devops-node-api": "^12.0.0",
+    "nunjucks": "^3.2.3",
+    "typescript": "^4.9.5"
+  }
+}

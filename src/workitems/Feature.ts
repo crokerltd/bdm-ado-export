@@ -1,0 +1,120 @@
+import { AdoWit } from "../AdoWit";
+import { njk } from "../njk";
+import { writeFile } from "../utils";
+import { BaseWorkItem } from "./BaseWorkItem";
+import { HybridStory } from "./HybridStory";
+
+export class Feature extends BaseWorkItem {
+
+    override readonly itemFields: string[] = [
+        'Microsoft.VSTS.Common.AcceptanceCriteria',
+        'Custom.Assumptions'
+    ];
+
+    static async get(wiqlWhereClause?: string): Promise<Feature[]> {
+        const workItems = await BaseWorkItem.getByWiql(
+            `SELECT [System.Id] FROM workitems WHERE [System.WorkItemType] = "Feature" AND ( ${wiqlWhereClause} )`
+        );
+        return workItems.map((wi: any) => new Feature(wi));
+    }
+
+    static async getById(id: number): Promise<Feature> {
+        const adoWit = AdoWit.getInstance();
+        const workItems = await BaseWorkItem.getById(id);
+        return new Feature(workItems[0]);
+    }
+
+    featureCategory: string;
+    release: string;
+    plannedDevSprintOAS: string;
+    featureSource: string;
+    acceptanceCriteria: string;
+    assumptions: string;
+
+    constructor(data: any) {
+        super(data);
+        this.featureCategory = data.fields["Custom.FeatureCategory2"];
+        this.release = data.fields["Custom.Release"];
+        this.plannedDevSprintOAS = data.fields["Custom.PlannedDevSprint_OAS"];
+        this.featureSource = data.fields["Custom.FeatureSource"];
+        this.acceptanceCriteria = data.fields["Microsoft.VSTS.Common.AcceptanceCriteria"];
+        this.assumptions = data.fields["Custom.Assumptions"];
+    }
+
+    async getChildHybridStories(): Promise<HybridStory[]> {
+        return HybridStory.get(`[System.Parent] = ${this.id}`);
+    }
+
+    async render(template = 'feature.njk'): Promise<string> {
+        const hybridStories = await this.getChildHybridStories();
+        const data = {
+            item: this,
+            children: hybridStories,
+            comments: await this.getComments()
+        };
+        return await njk(template, data);
+    }
+
+}
+
+/*
+
+ 'System.Id': 52010,
+      'System.AreaId': 1313,
+      'System.AreaPath': 'BDC\\OAS\\Dev\\Curam',
+      'System.TeamProject': 'BDC',
+      'System.NodeName': 'Curam',
+      'System.AreaLevel1': 'BDC',
+      'System.AreaLevel2': 'OAS',
+      'System.AreaLevel3': 'Dev',
+      'System.AreaLevel4': 'Curam',
+      'System.Rev': 26,
+      'System.AuthorizedDate': '2023-03-21T17:43:48.48Z',
+      'System.RevisedDate': '9999-01-01T00:00:00Z',
+      'System.IterationId': 1386,
+      'System.IterationPath': 'BDC\\OAS\\R1',
+      'System.IterationLevel1': 'BDC',
+      'System.IterationLevel2': 'OAS',
+      'System.IterationLevel3': 'R1',
+      'System.WorkItemType': 'Feature',
+      'System.State': 'Removed',
+      'System.Reason': 'Moved out of state Validated',
+      'System.CreatedDate': '2022-06-06T17:09:27.1Z',
+      'System.CreatedBy': [Object],
+      'System.ChangedDate': '2023-03-21T17:43:48.48Z',
+      'System.ChangedBy': [Object],
+      'System.AuthorizedAs': [Object],
+      'System.PersonId': 239167431,
+      'System.Watermark': 570635,
+      'System.CommentCount': 5,
+      'System.Title': 'Assistive Technology - R1',
+      'Microsoft.VSTS.Common.StateChangeDate': '2022-11-24T20:42:36.75Z',
+      'Microsoft.VSTS.Common.ActivatedDate': '2022-06-10T20:33:19.153Z',
+      'Microsoft.VSTS.Common.ActivatedBy': [Object],
+      'Microsoft.VSTS.Common.Priority': 2,
+      'Microsoft.VSTS.Common.StackRank': 1999911302,
+      'Microsoft.VSTS.Common.ValueArea': 'Business',
+      'Custom.ProjectorInitiative': 'OAS Solution',
+      'Custom.Release': 'OAS R1',
+      'Custom.FeatureCategory2': 'Accessibility',
+      'WEF_D1D97C8FBDEC454F97F4E5EE8261C592_System.ExtensionMarker': false,
+      'WEF_D1D97C8FBDEC454F97F4E5EE8261C592_Kanban.Column': 'Elaboration/Verification',
+      'WEF_D1D97C8FBDEC454F97F4E5EE8261C592_Kanban.Column.Done': false,
+      'WEF_3CE20D153EC9496789F98E3BAC9035FE_System.ExtensionMarker': false,
+      'WEF_3CE20D153EC9496789F98E3BAC9035FE_Kanban.Column': 'Validated',
+      'WEF_3CE20D153EC9496789F98E3BAC9035FE_Kanban.Column.Done': false,
+      'WEF_D6D846AB2B574ABD861D1E67617A4361_System.ExtensionMarker': false,
+      'WEF_D6D846AB2B574ABD861D1E67617A4361_Kanban.Column': 'Validated',
+      'WEF_D6D846AB2B574ABD861D1E67617A4361_Kanban.Column.Done': false,
+      'Custom.PlannedDevSprint_OAS': 'R1-S7',
+      'WEF_BEA4A2B8DEA249C0B91FD5F921D71531_System.ExtensionMarker': false,
+      'WEF_BEA4A2B8DEA249C0B91FD5F921D71531_Kanban.Column': 'Validated',
+      'WEF_BEA4A2B8DEA249C0B91FD5F921D71531_Kanban.Column.Done': false,
+      'Custom.PlannedDevStartSprint': 'R1-S7',
+      'Custom.FeatureSource': 'OAS Business Team',
+      'Custom.ForecastDevStartSprint': 'R1-S7',
+      'Custom.ForecastDevCompleteSprint': 'R1-S7',
+      'Custom.TargetedSubmissionDate': '2022-09-26T00:00:00Z',
+      'System.Parent': 52007
+
+      */

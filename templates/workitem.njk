@@ -1,0 +1,40 @@
+<HTML>
+  <HEAD>
+    <LINK REL="stylesheet" TYPE="text/css" HREF="styles.css"/>
+  </HEAD>
+  <BODY>
+    <H1>
+      <A HREF="{{ item.url }}">
+        {% block header %}
+          WorkItem {{ item.id }}
+        {% endblock %}
+      </A>
+      <H2>Tags</H2>
+      <UL>
+        {% for tag in item.tags %}
+          <LI>{{ tag }}</LI>
+        {% endfor %}
+      </UL>
+    </H1>
+    <H2>
+      {% block title %}
+        {{ item.title }}
+      {% endblock %}
+    </H2>
+    <HR>
+      <H2>Item</H2>
+      {% block item %}
+        <H2>Description</H2>
+        <P class="description">{{ item.description }}</P>
+      {% endblock %}
+      <HR>
+        <H2>Comments</H2>
+        {% for comment in comments %}
+          <div class="comment">
+            <P class="createdByDisplayName">{{ comment.createdBy.displayName }}</P>
+            <P class="createdDate">{{ comment.createdDate }}</P>
+            <P class="text">{{ comment.text }}</P>
+          </div>
+        {% endfor %}
+      </BODY>
+    </HTML>
