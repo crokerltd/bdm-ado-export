@@ -30,9 +30,9 @@ npm build
 
 Prior to executiont the following enironment must be set
 ```
-API_TOKEN=PersonalAccessTokenGoesHere
-API_URL=https://dev.azure.com/vp-bd
-API_PROJECT=BDC
+ADO_API_TOKEN=PersonalAccessTokenGoesHere
+ADO_API_URL=https://dev.azure.com/vp-bd
+ADO_API_PROJECT=BDC
 ```
 
 ## Execution

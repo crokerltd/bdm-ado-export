@@ -1,0 +1,15 @@
+https://analytics.dev.azure.com/mcroker/DevOps Demo/_odata/v4.0-preview/TestPointHistorySnapshot?
+$apply=
+     filter(DateSK ge 20240101 and TestSuite/TestPlanId eq XXX)
+/groupby( 
+    (DateSK),  
+    aggregate( 
+        $count as TotalCount, 
+        cast(ResultOutcome  eq 'Passed', Edm.Int32) with sum as Passed, 
+        cast(ResultOutcome  eq 'Failed', Edm.Int32) with sum as Failed, 
+        cast(ResultOutcome eq 'Blocked', Edm.Int32) with sum as Blocked, 
+        cast(ResultOutcome eq 'NotApplicable', Edm.Int32) with sum as NotApplicable, 
+        cast(ResultOutcome eq 'None', Edm.Int32) with sum as NotExecuted,  
+        cast(ResultOutcome ne 'None', Edm.Int32) with sum as Executed 
+    ) 
+)

@@ -1,28 +1,25 @@
 import { WebApi } from 'azure-devops-node-api';
 import { IWorkItemTrackingApi } from 'azure-devops-node-api/WorkItemTrackingApi';
 import { SendMailBody, WorkItemErrorPolicy, WorkItemExpand } from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
-import * as adoApi from 'azure-devops-node-api';
 import { chunkArray, getEnv } from './utils';
+import { AdoBase } from './AdoBase';
 // import * as lim from "azure-devops-node-api/interfaces/LocationsInterfaces";
 
-export class AdoWit {
+export class AdoWit extends AdoBase {
 
     private static instance: AdoWit;
 
-    static getInstance() {
+    static getInstance(projectId?: string, orgId?: string, token?: string) {
         if (!AdoWit.instance) {
-            AdoWit.instance = new AdoWit();
+            AdoWit.instance = new AdoWit(projectId, orgId, token);
         }
         return AdoWit.instance;
     }
 
-    private webApi: undefined | adoApi.WebApi;
     private witClient: undefined | IWorkItemTrackingApi;
 
-    private constructor(
-        readonly projectId: string = getEnv("ADO_API_PROJECT")
-    ) {
-        // do nothing
+    private constructor(projectId?: string, orgId?: string, token?: string) {
+        super(projectId, orgId, token);
     }
 
     async getAllTags(): Promise<any> {
@@ -84,6 +81,29 @@ export class AdoWit {
         }
     }
 
+    async getWorkItemSnapshot(): Promise<any> {
+        // const result = await this.execOData(`/WorkItemSnapshot?%24apply=filter%28+WorkItemType+eq+%27Bug%27+and+State+ne+%27Closed%27+and+startswith%28Iteration%2FIterationPath%2C%27BDC%5COAS%5CR2%27%29+and+DateValue+ge+2024-01-01Z+%29+%2Fgroupby%28+%28DateValue%29%2C+aggregate%28+%24count+as+Count%2C+cast%28State++eq+%27Active%27%2C+Edm.Int32%29+with+sum+as+Active%2C+cast%28State++eq+%27Blocked%27%2C+Edm.Int32%29+with+sum+as+Blocked%2C+cast%28State+eq+%27New%27%2C+Edm.Int32%29+with+sum+as+New%2C+cast%28State+eq+%27Resolved%27%2C+Edm.Int32%29+with+sum+as+Resolved+%29+%29`);
+        const result = await this.execOData('WorkItemSnapshot', `
+        filter(
+            WorkItemType eq 'Bug'
+            and State ne 'Closed'
+            and startswith(Iteration/IterationPath,'BDC\\OAS\\R2')
+            and DateValue ge 2024-01-01Z
+            )
+        /groupby(
+            (DateValue),
+            aggregate(
+                $count as Count, 
+                cast(State  eq 'Active', Edm.Int32) with sum as Active, 
+                cast(State  eq 'Blocked', Edm.Int32) with sum as Blocked, 
+                cast(State eq 'New', Edm.Int32) with sum as New, 
+                cast(State eq 'Resolved', Edm.Int32) with sum as Resolved
+                )
+            )
+        `);
+        return result;
+    }
+
     async getWorkItemComments(workItemId: number): Promise<any> {
         const witApi: IWorkItemTrackingApi = await this.getWitClient();
         return await witApi.getComments(this.projectId, workItemId);
@@ -96,27 +116,10 @@ export class AdoWit {
 
     private async getWitClient(): Promise<IWorkItemTrackingApi> {
         if (this.witClient === undefined) {
-            if (this.webApi === undefined) {
-                this.webApi = await this.getWebApi();
-            }
-            this.witClient = await this.webApi.getWorkItemTrackingApi();
+            const webApi: WebApi = await this.getWebApi();
+            this.witClient = await webApi.getWorkItemTrackingApi();
         }
         return this.witClient;
-    }
-
-    private async getWebApi(serverUrl?: string): Promise<adoApi.WebApi> {
-        if (this.webApi === undefined) {
-            serverUrl = serverUrl || getEnv("ADO_API_URL");
-            let token = getEnv("ADO_API_TOKEN");
-
-            let authHandler = adoApi.getPersonalAccessTokenHandler(token);
-            let option = undefined;
-
-            this.webApi = new adoApi.WebApi(serverUrl, authHandler, option);
-            // let connData: lim.ConnectionData = await vsts.connect();
-            // console.log(`Hello ${connData.authenticatedUser?.providerDisplayName}`);
-        }
-        return this.webApi;
     }
 
 }

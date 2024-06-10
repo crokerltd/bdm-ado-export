@@ -1,7 +1,7 @@
 // import { groupAndSendToAssignees } from "./adoEmail";
+import { AdoTest } from "./AdoTest";
 import { AdoWit } from "./AdoWit";
-import { njk } from "./njk";
-import { QueryList, QueryResults } from "./types";
+import { BDMTestPlan } from "./bdm";
 import { writeFile } from "./utils";
 import { Feature } from "./workitems/Feature";
 
@@ -9,12 +9,7 @@ const options = {
   daysSinceUpdated: 7
 };
 
-/**
- * Main function
- */
-(async () => {
-  // const adoWit = AdoWit.getInstance();
-  // console.log(await adoWit.listWorkItemFields('Feature'));
+export async function exportFeatures() {
   const features = (await Feature.get(`
     [System.State] <> "Removed"
     AND (
@@ -27,5 +22,27 @@ const options = {
     await writeFile(JSON.stringify(feature), `out/feature-${feature.id}.json`);
     await writeFile(await feature.render(), `out/feature-${feature.id}.html`);
   }
+}
+
+export async function exportStatusReport() {
+  const token = 'rjxgfxil5cm2brncpwyumakackfdlughadcu3zfl2tz4fgu4gmsq';
+  const adoTest = await AdoTest.getInstance();
+  const adoWit = await AdoWit.getInstance();
+  // const adoTest = await AdoTest.getInstance('DevOps%20Demo', 'mcroker', token);
+  // const plans = await adoTest.getTestPlans();
+  // writeFile(JSON.stringify(plans.map(i => ({ id: i.id, name: i.name }))), "out/plans.json");
+  const dailyResults = await adoTest.getTestResultsDaily(BDMTestPlan.r2);
+  writeFile(JSON.stringify(dailyResults), "out/daily-r2.json");
+  const dailyResultsAT = await adoTest.getTestResultsDaily(BDMTestPlan.r2accessibility);
+  writeFile(JSON.stringify(dailyResultsAT), "out/daily-access.json");
+  const bugTrend = await adoWit.getWorkItemSnapshot()
+  writeFile(JSON.stringify(bugTrend), "out/bugTrend.json");
+}
+
+/**
+ * Main function
+ */
+(async () => {
+  await exportStatusReport();
 })();
 
