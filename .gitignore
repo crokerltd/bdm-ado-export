@@ -3,3 +3,4 @@ src/settings.ts
 
 node_modules
 dist
+out

@@ -1,7 +1,7 @@
 import { AdoWit } from './AdoWit';
 import { SendMailBody } from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
-import { njk } from './njk';
-import { AssigneeWorkItemData, QueryResults } from './types';
+import { njk } from '../njk';
+import { AssigneeWorkItemData, QueryResults } from '../types';
 
 /**
  * Group query results by assignee; filter each data property by assignee's work items

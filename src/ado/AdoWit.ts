@@ -1,7 +1,7 @@
 import { WebApi } from 'azure-devops-node-api';
 import { IWorkItemTrackingApi } from 'azure-devops-node-api/WorkItemTrackingApi';
 import { SendMailBody, WorkItemErrorPolicy, WorkItemExpand } from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
-import { chunkArray, getEnv } from './utils';
+import { chunkArray } from '../utils';
 import { AdoBase } from './AdoBase';
 // import * as lim from "azure-devops-node-api/interfaces/LocationsInterfaces";
 
@@ -52,6 +52,8 @@ export class AdoWit extends AdoBase {
         return workItems;
     }
 
+
+
     async listWorkItemFields(workItemType: string) {
         const witApi: IWorkItemTrackingApi = await this.getWitClient();
         const fields = await witApi.getWorkItemTypeFieldsWithReferences(this.projectId, workItemType);
@@ -66,6 +68,9 @@ export class AdoWit extends AdoBase {
      * @returns    An array of expanded WorkItems
      */
     private async getWorkItemsBatch(ids: number[], fields?: string[], asOf?: Date): Promise<any> {
+        if (ids === null || ids === undefined) {
+            throw new Error('ids must be defined');
+        }
         const witClient = await this.getWitClient();
         try {
             const items = await witClient.getWorkItems(

@@ -1,73 +1,15 @@
-import { AdoWit } from "../AdoWit";
+import { AdoWit } from "../ado/AdoWit";
+import { njk } from "../njk";
+import { writeFile } from "../utils";
+import { WalkedNode } from "../Walker";
+import { ADOWorkItem, ADOWorkItemComment, ADOWorkItemRel, WorkItem, WorkItemFactoryIf } from "./types";
 
-export interface WorkItemRel {
-    rel: string;
+export interface RelatedWorkItem extends ADOWorkItemRel {
     id: number;
-    url: string;
-    attributes: {
-        isLocked: boolean;
-        name: string;
-    };
+    workitem: WorkItem;
 }
 
-export interface WorkItemComment {
-    mentions: any[],
-    workItemId: number,
-    id: number,
-    version: number,
-    text: string,
-    createdBy: WorkItemUser,
-    createdDate: any,
-    modifiedBy: WorkItemUser,
-    modifiedDate: any,
-    format: string,
-    renderedText: string,
-    url: string
-}
-
-export interface WorkItemUser {
-    displayName: string,
-    url: string,
-    _links: {
-        avatar: {
-            href: string
-        }
-    },
-    id: string,
-    uniqueName: string,
-    imageUrl: string,
-    descriptor: string
-}
-
-const BASE_FIELDS: string[] = [
-    'System.Title',
-    'System.AreaPath',
-    'System.IterationPath',
-    'System.WorkItemType',
-    'System.State',
-    'System.Parent',
-    'System.Description',
-    'System.Tags'
-];
-
-export abstract class BaseWorkItem {
-
-    protected static async getByWiql(wiql: string, fields?: string[]): Promise<any> {
-        const adoWit = AdoWit.getInstance();
-        const ids = await adoWit.adoGetIdsFromWiql(wiql);
-        return await adoWit.getWorkItems(ids, [...BASE_FIELDS, ...(fields || [])]);
-    }
-
-    protected static async getById(id: number | number[], fields?: string[]): Promise<any> {
-        const adoWit = AdoWit.getInstance();
-        const workItems = await adoWit.getWorkItems(
-            Array.isArray(id) ? id : [id],
-            [...BASE_FIELDS, ...(fields || [])]
-        );
-        return workItems[0];
-    }
-
-    readonly itemFields: string[] = [];
+export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
 
     id: number;
     title: string;
@@ -77,10 +19,10 @@ export abstract class BaseWorkItem {
     state: string;
     parent: string;
     description: string;
-    relations: WorkItemRel[];
+    relations: ADOWorkItemRel[];
     url: string;
     tags: string[];
-    comments: undefined | WorkItemComment[] = undefined;
+    comments: undefined | ADOWorkItemComment[] = undefined;
 
     protected get adoWit(): AdoWit {
         if (!this._adoWit) {
@@ -91,7 +33,8 @@ export abstract class BaseWorkItem {
     private _adoWit: AdoWit | undefined;
 
     constructor(
-        data: any
+        public readonly data: ADOWorkItem,
+        public readonly factory: WorkItemFactoryIf
     ) {
         this.id = data.id;
         this.title = data.fields["System.Title"];
@@ -106,17 +49,52 @@ export abstract class BaseWorkItem {
         this.tags = (data.fields["System.Tags"] || '').split(";");
     }
 
-    async getChildrenIds() {
+    getRelatedWorkItemRecords(): (ADOWorkItemRel & { id: number })[] {
         return this.relations
+            .map(rel => ({ ...rel, id: parseInt(rel.url.split('workItems/')[1]) }) as ADOWorkItemRel & { id: number })
+            .filter(rel => !isNaN(rel.id));
+    }
+
+    getChildrenIds() {
+        return this.getRelatedWorkItemRecords()
             .filter(r => r.rel === "System.LinkTypes.Hierarchy-Forward")
             .map(r => r.id);
     }
 
-    async getComments(): Promise<WorkItemComment[]> {
+    async getComments(): Promise<ADOWorkItemComment[]> {
         if (this.comments === undefined) {
             this.comments = (await this.adoWit.getWorkItemComments(this.id)).comments;
         }
         return this.comments || [];
+    }
+
+    getRelatedNodes(): Promise<WalkedNode<BaseWorkItem>[]> {
+        return Promise.resolve([]);
+    }
+
+    async processNode(): Promise<void> {
+        await this.getComments();
+        await writeFile(await this.render(), `workitems/${this.id}.html`);
+        // await writeFile(JSON.stringify(feature), `out/feature-${feature.id}.json`);
+    }
+
+    async getRelatedWorkItems(filterFn?: (x: ADOWorkItemRel & { id: number }) => boolean): Promise<RelatedWorkItem[]> {
+        const rels = this.getRelatedWorkItemRecords().filter(filterFn || (() => true));
+        return (await this.factory.getById(rels.map(rel => rel.id)))
+            .map(workitem => ({
+                ...rels.find(r => r.id === workitem?.id) as ADOWorkItemRel & { id: number },
+                workitem
+            }));
+    }
+
+    async render(template = 'workitem.njk', data: object = {}): Promise<string> {
+        const combinedData = {
+            item: this,
+            related: await this.getRelatedWorkItems(),
+            comments: await this.getComments(),
+            ...data
+        };
+        return await njk(template, combinedData);
     }
 
     /*

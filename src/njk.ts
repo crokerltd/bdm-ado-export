@@ -21,6 +21,14 @@ export async function njk(template: string, context: object = {}): Promise<strin
             return (b || []).map(i => `${i}`).join(', ');
         });
 
+        env.addFilter('parseUrls', function (b?: string) {
+            if (typeof b !== 'string') {
+                return b;
+            }
+            return b
+                .replace(/"https?:\/\/dev.azure.com\/VP-BD\/[^"]*_workitems(\/edit)?\/([0-9]+)"/g, '"$2.html"');
+        });
+
         env.render(template, context,
             (err: Error | null, res: string | null) => {
                 if (err || res === null) {

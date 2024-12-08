@@ -1,33 +1,32 @@
 <HTML>
   <HEAD>
-    <LINK REL="stylesheet" TYPE="text/css" HREF="styles.css"/>
+    <LINK REL="stylesheet" TYPE="text/css" HREF="../styles.css"/>
   </HEAD>
   <BODY>
-    <H1>
-      <A HREF="{{ item.url }}">
-        {% block header %}
-          WorkItem {{ item.id }}
+    <div id="toppane">
+      <H1>
+        <A HREF="{{ item.url }}">
+          {% block header %}
+            {{ item.workItemType }}
+            {{ item.id }} : {{ item.title }}
+          {% endblock %}
+        </A>
+        <H2>Tags</H2>
+        <div class="tags">
+          {% for tag in item.tags %}
+            <div class="tag">{{ tag }}</div>
+          {% endfor %}
+        </div>
+      </H1>
+      <HR/>
+    </div>
+    <div id="bodypane">
+      <div id="leftpane">
+        {% block item %}
+          <H2>Description</H2>
+          <div class="textblock">{{ item.description | parseUrls }}</div>
         {% endblock %}
-      </A>
-      <H2>Tags</H2>
-      <UL>
-        {% for tag in item.tags %}
-          <LI>{{ tag }}</LI>
-        {% endfor %}
-      </UL>
-    </H1>
-    <H2>
-      {% block title %}
-        {{ item.title }}
-      {% endblock %}
-    </H2>
-    <HR>
-      <H2>Item</H2>
-      {% block item %}
-        <H2>Description</H2>
-        <P class="description">{{ item.description }}</P>
-      {% endblock %}
-      <HR>
+        <HR/>
         <H2>Comments</H2>
         {% for comment in comments %}
           <div class="comment">
@@ -36,5 +35,21 @@
             <P class="text">{{ comment.text }}</P>
           </div>
         {% endfor %}
-      </BODY>
-    </HTML>
+      </div>
+      <div id="rightpane">
+        <H2>Related</H2>
+        {% for relation in related %}
+          <div class="relation">
+            <P class="relationType">{{ relation.workitem.rel }}</P>
+            <P class="relatedItem">
+              <A HREF="{{ relation.id }}.html">
+                {{ relation.workitem.workItemType }}
+                {{ relation.workitem.id }} : {{ relation.workitem.title }}
+              </A>
+            </P>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+  </BODY>
+</HTML>

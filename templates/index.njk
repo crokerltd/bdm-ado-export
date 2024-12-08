@@ -1,0 +1,25 @@
+<HTML>
+    <HEAD>
+        <TITLE>
+            {% block title %}
+                WorkItems
+            {% endblock %}
+        </TITLE>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="styles.css"/>
+    </HEAD>
+    <BODY>
+        <H1>
+            {% block header %}
+                WorkItems
+            {% endblock %}
+        </H1>
+        <UL>
+            {% for item in items %}
+                <LI>
+                    <A HREF="./workitems/{{ item.id }}.html">
+                        {{ item.id }} : {{ item.title }}
+                    </A>
+                </LI>
+            {% endfor %}
+        </UL>
+    </HTML>

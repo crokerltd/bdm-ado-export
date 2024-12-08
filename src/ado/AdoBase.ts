@@ -1,5 +1,5 @@
 import * as adoApi from 'azure-devops-node-api';
-import { getEnv } from './utils';
+import { getEnv } from '../utils';
 import fetch from 'node-fetch';
 // import * as lim from "azure-devops-node-api/interfaces/LocationsInterfaces";
 
@@ -10,7 +10,7 @@ export abstract class AdoBase {
     constructor(
         readonly projectId: string = getEnv("ADO_API_PROJECT"),
         readonly orgId: string = getEnv("ADO_API_ORG"),
-        private readonly token: string = getEnv("ADO_API_TOKEN")
+        protected readonly token: string = getEnv("ADO_API_TOKEN")
     ) {
         // do nothing
     }

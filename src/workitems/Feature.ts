@@ -1,28 +1,15 @@
-import { AdoWit } from "../AdoWit";
-import { njk } from "../njk";
-import { writeFile } from "../utils";
+import { WalkedNode } from "../Walker";
 import { BaseWorkItem } from "./BaseWorkItem";
 import { HybridStory } from "./HybridStory";
+import { WorkItemFactoryIf } from "./types";
+import { writeFile } from "../utils";
+
+const EXTRA_FIELDS = [
+    'Microsoft.VSTS.Common.AcceptanceCriteria',
+    'Custom.Assumptions'
+]
 
 export class Feature extends BaseWorkItem {
-
-    override readonly itemFields: string[] = [
-        'Microsoft.VSTS.Common.AcceptanceCriteria',
-        'Custom.Assumptions'
-    ];
-
-    static async get(wiqlWhereClause?: string): Promise<Feature[]> {
-        const workItems = await BaseWorkItem.getByWiql(
-            `SELECT [System.Id] FROM workitems WHERE [System.WorkItemType] = "Feature" AND ( ${wiqlWhereClause} )`
-        );
-        return workItems.map((wi: any) => new Feature(wi));
-    }
-
-    static async getById(id: number): Promise<Feature> {
-        const adoWit = AdoWit.getInstance();
-        const workItems = await BaseWorkItem.getById(id);
-        return new Feature(workItems[0]);
-    }
 
     featureCategory: string;
     release: string;
@@ -31,8 +18,8 @@ export class Feature extends BaseWorkItem {
     acceptanceCriteria: string;
     assumptions: string;
 
-    constructor(data: any) {
-        super(data);
+    constructor(data: any, factory: WorkItemFactoryIf) {
+        super(data, factory);
         this.featureCategory = data.fields["Custom.FeatureCategory2"];
         this.release = data.fields["Custom.Release"];
         this.plannedDevSprintOAS = data.fields["Custom.PlannedDevSprint_OAS"];
@@ -41,18 +28,12 @@ export class Feature extends BaseWorkItem {
         this.assumptions = data.fields["Custom.Assumptions"];
     }
 
-    async getChildHybridStories(): Promise<HybridStory[]> {
-        return HybridStory.get(`[System.Parent] = ${this.id}`);
+    async getRelatedNodes(): Promise<WalkedNode<BaseWorkItem>[]> {
+        return this.factory.getByWiql(`[System.WorkItemType] == "Hybrid Story" AND [System.Parent] = ${this.id}`);
     }
 
-    async render(template = 'feature.njk'): Promise<string> {
-        const hybridStories = await this.getChildHybridStories();
-        const data = {
-            item: this,
-            children: hybridStories,
-            comments: await this.getComments()
-        };
-        return await njk(template, data);
+    async render(template = 'feature-workitem.njk'): Promise<string> {
+        return super.render(template)
     }
 
 }
