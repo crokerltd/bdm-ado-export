@@ -1,24 +1,42 @@
 import { WalkedNode } from "../Walker";
 import { BaseWorkItem } from "./BaseWorkItem";
-import { HybridStory } from "./HybridStory";
-import { WorkItemFactoryIf } from "./types";
-import { writeFile } from "../utils";
+import { ADOWorkItem, ADOWorkItemBaseFields, WorkItemFactoryIf, isADOWorkItem } from "./types";
 
-const EXTRA_FIELDS = [
-    'Microsoft.VSTS.Common.AcceptanceCriteria',
-    'Custom.Assumptions'
-]
+export function isADOFeatureWorkItem(x: any): x is ADOWorkItem<ADOWorkItemFeatureFields> {
+    return isADOWorkItem(x) && isADOWorkItemFeatureFields(x.fields)
+}
+
+export interface ADOWorkItemFeatureFields extends ADOWorkItemBaseFields {
+    "Custom.FeatureCategory2"?: string;
+    "Custom.Release"?: string;
+    "Custom.PlannedDevSprint_OAS"?: string;
+    "Custom.FeatureSource"?: string;
+    "Microsoft.VSTS.Common.AcceptanceCriteria"?: string;
+    "Custom.Assumptions"?: string;
+}
+
+export function isADOWorkItemFeatureFields(x: any): x is ADOWorkItemFeatureFields {
+    const result = {
+        category: (x["Custom.FeatureCategory2"] === undefined || typeof x["Custom.FeatureCategory2"] === "string"),
+        release: (x["Custom.Release"] === undefined || typeof x["Custom.Release"] === "string"),
+        plannedSprint: (x["Custom.PlannedDevSprint_OAS"] === undefined || typeof x["Custom.PlannedDevSprint_OAS"] === "string"),
+        featureSource: (x["Custom.FeatureSource"] === undefined || typeof x["Custom.FeatureSource"] === "string"),
+        acceptanceCriteria: (x["Microsoft.VSTS.Common.AcceptanceCriteria"] === undefined || typeof x["Microsoft.VSTS.Common.AcceptanceCriteria"] === "string"),
+        assumptions: (x["Custom.Assumptions"] === undefined || typeof x["Custom.Assumptions"] === "string")
+    }
+    return Object.values(result).every(x => x)
+}
 
 export class Feature extends BaseWorkItem {
 
-    featureCategory: string;
-    release: string;
-    plannedDevSprintOAS: string;
-    featureSource: string;
-    acceptanceCriteria: string;
-    assumptions: string;
+    featureCategory?: string;
+    release?: string;
+    plannedDevSprintOAS?: string;
+    featureSource?: string;
+    acceptanceCriteria?: string;
+    assumptions?: string;
 
-    constructor(data: any, factory: WorkItemFactoryIf) {
+    constructor(data: ADOWorkItem<ADOWorkItemFeatureFields>, factory: WorkItemFactoryIf) {
         super(data, factory);
         this.featureCategory = data.fields["Custom.FeatureCategory2"];
         this.release = data.fields["Custom.Release"];

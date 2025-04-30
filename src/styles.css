@@ -23,6 +23,7 @@ div.tags {
     display: flex;
     flex-direction: row;
     justify-content: left;
+
     div.tag {
         background-color: #f9f9f9;
         border: grey 1px solid;
@@ -47,4 +48,29 @@ div.tags {
         width: 30%;
     }
 
+}
+
+table.striped {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+table,
+th,
+td {
+    border: 1px solid black;
+}
+
+th,
+td {
+    padding: 8px;
+    text-align: left;
+}
+
+tr:nth-child(even) {
+    background-color: #f2f2f2;
+}
+
+tr:nth-child(odd) {
+    background-color: #ffffff;
 }

@@ -1,0 +1,37 @@
+<HTML>
+    <HEAD>
+        <TITLE>
+            Production Bugs
+        </TITLE>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="styles.css"/>
+    </HEAD>
+    <BODY>
+        <H1>
+            Production Bugs
+        </H1>
+        <TABLE class="striped">
+            <TR>
+                <TD>ID</TD>
+                <TD>STATUS</TD>
+                <TD>PRIORITY</TD>
+                <TD>TITLE</TD>
+                <TD>PARTNER</TD>
+                <TD>WORK-AROUND</TD>
+                <TD>LAST COMMENT</TD>
+            </TR>
+            
+        
+            {% for item in items %}
+                <TR>
+                    <TD><A HREF="./workitems/{{ item.id }}.html">{{ item.id }}</A></TD>
+                    <TD>{{ item.state }}</TD>
+                    <TD>{{ item.priority }}</TD>
+                    <TD>{{ item.title }}</TD>
+                    <TD>{{ item.partner }}</TD>
+                    <TD>{{ item.workaround | stripHtml  }}</TD>
+                    <TD>{{ item.comments[0].text | stripHtml }}</TD>
+                </TR>
+            {% endfor %}
+    </TABLE>
+    </BODY>
+</HTML>

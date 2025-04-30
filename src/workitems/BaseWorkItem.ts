@@ -17,12 +17,14 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
     iterationPath: string;
     workItemType: string;
     state: string;
-    parent: string;
-    description: string;
+    parent?: number;
+    description?: string;
     relations: ADOWorkItemRel[];
     url: string;
     tags: string[];
     comments: undefined | ADOWorkItemComment[] = undefined;
+    priority?: number;
+    severity?: string;
 
     protected get adoWit(): AdoWit {
         if (!this._adoWit) {
@@ -44,9 +46,15 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
         this.state = data.fields["System.State"];
         this.parent = data.fields["System.Parent"];
         this.description = data.fields["System.Description"];
-        this.relations = data.relations;
+        this.relations = data.relations || [];
         this.url = data.url;
         this.tags = (data.fields["System.Tags"] || '').split(";");
+        this.priority = data.fields["Microsoft.VSTS.Common.Priority"];
+        this.severity = data.fields["Microsoft.VSTS.Common.Severity"];
+    }
+
+    get severityNum(): number | undefined {
+        return (this.severity === undefined) ? undefined : parseInt(this.severity.substring(0, 1))
     }
 
     getRelatedWorkItemRecords(): (ADOWorkItemRel & { id: number })[] {
@@ -107,3 +115,6 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
     */
 
 }
+
+
+// https://dev.azure.com/VP-BD/7f843e74-7fa0-49a2-8e9b-6308f6cab07e/_apis/wit/workItems/329386

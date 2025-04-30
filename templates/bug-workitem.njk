@@ -1,0 +1,5 @@
+{% extends "workitem.njk" %}
+{% block item %}
+    <H2>Description</H2>
+    <DIV class="textblock">{{ item.description | parseUrls }}</DIV>
+{% endblock %}

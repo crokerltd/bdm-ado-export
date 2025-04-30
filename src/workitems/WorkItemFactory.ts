@@ -1,29 +1,14 @@
 import { AdoWit } from "../ado/AdoWit";
 import { BaseWorkItem } from "./BaseWorkItem";
-import { Feature } from "./Feature";
+import { Bug, isADOBugWorkItem } from "./Bug";
+import { Feature, isADOFeatureWorkItem } from "./Feature";
 import { HybridStory } from "./HybridStory";
-import { ADOWorkItem, WorkItem } from "./types";
-
-export const BASE_FIELDS: string[] = [
-    'System.Title',
-    'System.AreaPath',
-    'System.IterationPath',
-    'System.WorkItemType',
-    'System.State',
-    'System.Parent',
-    'System.Description',
-    'System.Tags',
-
-    // Feature
-    'Custom.FeatureCategory2',
-    'Custom.Release',
-    'Custom.PlannedDevSprint_OAS',
-    'Custom.FeatureSource',
-    'Microsoft.VSTS.Common.AcceptanceCriteria',
-    'Custom.Assumptions'
-];
+import { ADOWorkItem, WorkItem, isADOWorkItem } from "./types";
+import { Level } from 'level'
 
 export class WorkItemFactory {
+
+    private db = new Level<string, any>('./out/db', { valueEncoding: 'json' });
 
     private static instance: WorkItemFactory;
     public static getInstance(): WorkItemFactory {
@@ -33,7 +18,11 @@ export class WorkItemFactory {
         return WorkItemFactory.instance;
     }
 
-    protected cache: Map<number, ADOWorkItem> = new Map<number, ADOWorkItem>;
+    // protected cache: Map<number, ADOWorkItem> = new Map<number, ADOWorkItem>;
+
+    close(): Promise<void> {
+        return this.db.close()
+    }
 
     async getByWiql(wiqlWhereClause: string): Promise<WorkItem[]> {
         const adoWit = AdoWit.getInstance();
@@ -48,6 +37,52 @@ export class WorkItemFactory {
     async getById(id: number): Promise<WorkItem | undefined>;
     async getById(id: number[]): Promise<(WorkItem)[]>;
     async getById(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
+        if (Array.isArray(id)) {
+
+            const temp: { [key: number]: ADOWorkItem | undefined } = {}
+
+            const cacheResults = await this.db.getMany(id.map(x => `${x}`))
+            id.forEach((v, i) => { temp[v] = cacheResults[i] })
+
+            const fetchIds = id.filter((v, i) => cacheResults[i] === undefined) as number[]
+            const fetchResults = await this.getByIdFromADO(fetchIds);
+            fetchIds.forEach((v, i) => { temp[v] = fetchResults[i] })
+
+            await this.db.batch(fetchIds
+                .map((v, i) => {
+                    if (fetchResults[i] !== undefined) {
+                        return {
+                            type: 'put',
+                            key: `${v}`,
+                            value: fetchResults[i]
+                        }
+                    }
+                })
+                .filter(v => v !== undefined) as any);
+
+            return id
+                .map(i => temp[i])
+                .filter(i => i !== undefined)
+                .map(i => this.convert(i)) as WorkItem[];
+
+        } else {
+            const strId: string = `${id}`
+            var result: ADOWorkItem | undefined = await this.db.get(strId)
+            console.log('x', result, 'x')
+            if (result === undefined) {
+                result = await this.getByIdFromADO(id);
+                if (result !== undefined) {
+                    await this.db.put(strId, result);
+                }
+            }
+            return this.convert(result);
+        }
+    }
+
+    /*
+    async getByIdFromMemCache(id: number): Promise<WorkItem | undefined>;
+    async getByIdFromMemCache(id: number[]): Promise<(WorkItem)[]>;
+    async getByIdFromMemCache(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
 
         if (Array.isArray(id)) {
             const fetchResult = await this.getByIdFromADO(id.filter(i => !this.cache.has(i)));
@@ -69,6 +104,7 @@ export class WorkItemFactory {
             return this.convert(wi);
         }
     }
+    */
 
     private async getByIdFromADO(id: number): Promise<ADOWorkItem | undefined>;
     private async getByIdFromADO(id: number[]): Promise<ADOWorkItem[]>;
@@ -91,12 +127,25 @@ export class WorkItemFactory {
         } else {
             switch (data.fields['System.WorkItemType']) {
                 case 'Feature':
-                    return new Feature(data, this);
+                    if (isADOFeatureWorkItem(data)) {
+                        return new Feature(data, this);
+                    }
+                    break;
                 case 'Hybrid Story':
                     return new HybridStory(data, this);
+                case 'Bug':
+                    if (isADOBugWorkItem(data)) {
+                        return new Bug(data, this);
+                    }
+                    break;
                 default:
-                    return new BaseWorkItem(data, this);
+                    if (isADOWorkItem(data)) {
+                        return new BaseWorkItem(data, this);
+                    }
             }
+            // Record format has failed
+            console.error('Data does not comply with BaseWorkItem', data.fields['System.WorkItemType'])
+            return undefined;
         }
     }
 
