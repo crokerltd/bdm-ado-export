@@ -1,5 +1,11 @@
 {% extends "workitem.njk" %}
 {% block item %}
+
+    <div>{{ item.priority }}</div>
+    <div>{{ item.title }}</div>
+    <div>{{ item.partner }}</div>
+
     <H2>Description</H2>
-    <DIV class="textblock">{{ item.description | parseUrls }}</DIV>
+    <DIV class="textblock">{{ item.workaround | stripHtml  }}</DIV>
+</TR>
 {% endblock %}

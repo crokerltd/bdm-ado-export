@@ -1,76 +1,178 @@
 BODY {
-    font-family: Arial, Helvetica, sans-serif;
+  font-family: Arial, Helvetica, sans-serif;
+  width: 100%;
 }
 
 div.comment {
-    margin: 0 0 10px 0;
-    padding: 10px;
-    border: 1px solid #ccc;
-    background-color: #f9f9f9;
-    border-radius: 5px;
+  margin: 0 0 10px 0;
+  padding: 10px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  border-radius: 5px;
 }
 
 p.createdByDisplayName {
-    font-weight: bold;
+  font-weight: bold;
 }
 
 div.textblock {
-    background-color: #f9f9f9;
-    border: grey 1px solid;
+  background-color: #f9f9f9;
+  border: grey 1px solid;
 }
 
 div.tags {
-    display: flex;
-    flex-direction: row;
-    justify-content: left;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
 
-    div.tag {
-        background-color: #f9f9f9;
-        border: grey 1px solid;
-        border-radius: 5px;
-        padding: 5px;
-        margin: 5px;
-    }
+  div.tag {
+      background-color: #f9f9f9;
+      border: grey 1px solid;
+      border-radius: 5px;
+      padding: 5px;
+      margin: 5px;
+  }
 }
 
 #bodypane {
 
-    display: flex;
-    flex-direction: row;
+  display: flex;
+  flex-direction: row;
 
-    #leftpane {
-        padding: 5px;
-        width: 70%;
-    }
+  #leftpane {
+      padding: 5px;
+      width: 70%;
+  }
 
-    #rightpane {
-        padding: 5px;
-        width: 30%;
-    }
+  #rightpane {
+      padding: 5px;
+      width: 30%;
+  }
 
 }
 
 table.striped {
-    width: 100%;
-    border-collapse: collapse;
+  width: 100%;
+  border-collapse: collapse;
 }
 
-table,
+table.striped,
 th,
 td {
-    border: 1px solid black;
+  border: 1px solid black;
 }
 
 th,
 td {
-    padding: 8px;
-    text-align: left;
+  padding: 8px;
+  text-align: left;
 }
 
 tr:nth-child(even) {
-    background-color: #f2f2f2;
+  background-color: #f2f2f2;
 }
 
 tr:nth-child(odd) {
-    background-color: #ffffff;
+  background-color: #ffffff;
+}
+
+
+
+.banner-container {
+  display: flex;
+  flex-wrap: wrap;
+  flex-direction: row;
+}
+
+.banner-item-left {
+  flex: 50%;
+  flex-direction: column;
+}
+
+.banner-item-right {
+  flex: 50%;
+  flex-direction: column;
+}
+
+.banner-item-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.banner-item-label {
+  flex: 20%;
+  font-weight: bold;
+}
+
+.banner-item-content {
+  flex: 80%;
+}
+
+/* Responsive layout - makes a one column layout (100%) instead of a two-column layout (50%) */
+@media (max-width: 800px) {
+  .banner-item-right, .banner-item-left {
+    flex: 100%;
+  }
+}
+
+.kanban-swimlane {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: space-around;
+  flex-grow: calc();
+}
+
+.kanban-column {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  background-color: #f2f2f2;
+}
+
+.kanban-col-header {
+  font-weight: bold;
+}
+
+.kanban-item {
+  font-size: 10px;
+  margin: 5px;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+}
+
+.kanban-item-1 {
+  background-color: lightcoral;
+}
+
+.kanban-item-2 {
+  background-color: lightblue;
+}
+
+.kanban-item-3 {
+  background-color: lightblue;
+}
+
+.kanban-item-4 {
+  background-color: lightgreen;
+}
+
+.kanban-item-header {
+  margin-bottom: 2px;
+}
+
+.kanban-item-field {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+}
+
+.kanban-item-field-label {
+  flex: 20%;
+  font-weight: bold;
+}
+
+.kanban-item-field-content {
+  flex: 80%;
 }

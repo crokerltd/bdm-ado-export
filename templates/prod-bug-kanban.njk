@@ -1,0 +1,53 @@
+{% extends "kanban.njk" %}
+
+{% set states = [ 'New', 'Active', 'Blocked', 'Fixed', 'Resolved' ]  %}
+
+{% block title %}Production Bugs{% endblock %}
+{% block header %}Production Bugs{% endblock %}
+
+{% block item %}
+<div class="kanban-item kanban-item-{{ item.priority }}">
+  <div class="kanban-item-header">
+    <A HREF="https://dev.azure.com/VP-BD/BDC/_workitems/edit/{{ item.id }}/" TARGET="ADOITEM">{{ item.id }}</A> {{ item.title }}
+  </div>
+  <div class="kanban-item-field">
+    <div class="kanban-item-field-label">Assigned</div>
+    <div class="kanban-item-field-content">{{ item.assignedTo.displayName }}</div>
+  </div>
+  <div class="kanban-item-field">
+    <div class="kanban-item-field-label">Priority</div>
+    <div class="kanban-item-field-content">{{ item.priority }}</div>
+  </div>
+  {% if item.iterationPath !== "BDC\\OAS\\Production" %}
+  <div class="kanban-item-field">
+    <div class="kanban-item-field-label">Release</div>
+    <div class="kanban-item-field-content">{{ item.iterationPath | shrinkProdIterationPath }}</div>
+  </div>
+  {% endif %}
+  {% if item.partner !== undefined %}
+  <div class="kanban-item-field">
+    <div class="kanban-item-field-label">Partner</div>
+    <div class="kanban-item-field-content">{{ item.partner }}</div>
+  </div>
+  {% endif %}
+
+  {% if item.relatedTasks.length  %}
+  <h4>Tasks</h4>
+  <ul>
+  {% for child in item.relatedTasks %}
+    <li>{{ child.workitem.state }} <A HREF="https://dev.azure.com/VP-BD/BDC/_workitems/edit/{{ child.id }}/" TARGET="ADOITEM">{{ child.id }}</A> : {{ child.workitem.title }} [{{ child.workitem.assignedTo.displayName }}]</li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+
+  {% if item.relatedDecisions.length %}
+  <h4>Decisions</h4>
+  <ul>
+  {% for child in item.relatedDecisions %}
+    <li>{{ child.workitem.state }} <A HREF="https://dev.azure.com/VP-BD/BDC/_workitems/edit/{{ child.id }}/" TARGET="ADOITEM">{{ child.id }}</A> : {{ child.workitem.title }} [{{ child.workitem.assignedTo.displayName }}]</li>
+  {% endfor %}
+  </ul>
+  {% endif %}
+
+</div>
+{% endblock %}

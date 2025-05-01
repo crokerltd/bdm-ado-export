@@ -11,13 +11,38 @@
             {{ item.id }} : {{ item.title }}
           {% endblock %}
         </A>
-        <H2>Tags</H2>
-        <div class="tags">
-          {% for tag in item.tags %}
-            <div class="tag">{{ tag }}</div>
-          {% endfor %}
-        </div>
       </H1>
+        
+      <div class="banner-container">
+        <div class="banner-item-left">
+          <div class="banner-item-row">
+            <div class="banner-item-label">State</div>
+            <div class="banner-item-content">{{ item.state }}</div>
+          </div>
+          <div class="banner-item-row">
+            <div class="banner-item-label">Reason</div>
+            <div class="banner-item-content">{{ item.reason }}</div>
+          </div>
+        </div>
+        <div class="banner-item-right">
+          <div class="banner-item-row">
+            <div class="banner-item-label">Area</div>
+            <div class="banner-item-content">{{ item.areaPath }}</div>
+          </div>
+          <div class="banner-item-row">
+            <div class="banner-item-label">Iteration</div>
+            <div class="banner-item-content">{{ item.iterationPath }}</div>
+          </div>
+        </div>
+      </div>
+
+      <H2>Tags</H2>
+      <div class="tags">
+      {% for tag in item.tags %}
+         <div class="tag">{{ tag }}</div>
+       {% endfor %}
+      </div>
+
       <HR/>
     </div>
     <div id="bodypane">
@@ -28,7 +53,7 @@
         {% endblock %}
         <HR/>
         <H2>Comments</H2>
-        {% for comment in comments %}
+        {% for comment in item.comments %}
           <div class="comment">
             <P class="createdByDisplayName">{{ comment.createdBy.displayName }}</P>
             <P class="createdDate">{{ comment.createdDate }}</P>
@@ -38,7 +63,7 @@
       </div>
       <div id="rightpane">
         <H2>Related</H2>
-        {% for relation in related %}
+        {% for relation in item.related %}
           <div class="relation">
             <P class="relationType">{{ relation.workitem.rel }}</P>
             <P class="relatedItem">

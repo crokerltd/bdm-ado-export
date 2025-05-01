@@ -1,0 +1,52 @@
+<HTML>
+    <HEAD>
+        <TITLE>
+            {% block title %}
+                WorkItems
+            {% endblock %}
+        </TITLE>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="styles.css"/>
+        <style type="text/css">
+              .kanban-column-width {
+                width: {{ 95 / states.length }}%
+              }
+
+            </style>
+    </HEAD>
+    <BODY>
+        <H1>
+            {% block header %}
+                WorkItems
+            {% endblock %}
+        </H1>
+
+        {% for swimlane in swimlanes %}
+          <h2>{{ swimlane }}</h2>
+          <div class="kanban-swimlane">
+            {% for state in states %}
+          
+              <div class="kanban-column kanban-column-width">
+                
+              <div class="kanban-col-header">
+                {{ state }}
+            </div> 
+        
+                {% for item in items %}
+             
+                  {% if (item.state == state and item.swimlane == swimlane) %}
+                    
+                      {% block item %}
+                      <div class="kanban-item">
+                        <A HREF="./workitems/{{ item.id }}.html">
+                          {{ item.id }} : {{ item.title }}
+                        </A>
+                       </div>
+                      {% endblock %}  
+                  {% endif %}
+                {% endfor %}
+              </div>
+            {% endfor %}
+          </div>
+        {% endfor %}
+    </BODY>
+</HTML>

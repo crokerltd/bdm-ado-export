@@ -1,4 +1,5 @@
 import * as nunjucks from 'nunjucks';
+import { ADOWorkItem } from './workitems/types';
 
 /**
  * Use a njk template to render a string
@@ -7,7 +8,7 @@ import * as nunjucks from 'nunjucks';
  * @param context  Context data for the njk template generation
  * @returns        Rendered string
  */
-export async function njk(template: string, context: object = {}): Promise<string> {
+export async function njk(template: string, context: object = {}, mod?: (e: nunjucks.Environment) => void): Promise<string> {
     return new Promise<string>(async (resolve, reject) => {
         nunjucks.configure({
             autoescape: false
@@ -35,6 +36,10 @@ export async function njk(template: string, context: object = {}): Promise<strin
             return b
                 .replace(/\<img.*\>/gi, '');
         });
+
+        if (mod !== undefined) {
+            mod(env)
+        }
 
         env.render(template, context,
             (err: Error | null, res: string | null) => {

@@ -16,6 +16,7 @@
                 <TD>PRIORITY</TD>
                 <TD>TITLE</TD>
                 <TD>PARTNER</TD>
+                <TD>ITTERATION</TD>
                 <TD>WORK-AROUND</TD>
                 <TD>LAST COMMENT</TD>
             </TR>
@@ -28,6 +29,7 @@
                     <TD>{{ item.priority }}</TD>
                     <TD>{{ item.title }}</TD>
                     <TD>{{ item.partner }}</TD>
+                    <TD>{{ item.iterationPath | shrinkProdIterationPath }}</TD>
                     <TD>{{ item.workaround | stripHtml  }}</TD>
                     <TD>{{ item.comments[0].text | stripHtml }}</TD>
                 </TR>

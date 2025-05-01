@@ -31,9 +31,11 @@ export function isADOWorkItem(x: any): x is ADOWorkItem {
 export interface ADOWorkItemBaseFields {
     "System.Title": string,
     "System.AreaPath": string;
+    "System.AssignedTo"?: ADOWorkItemUser;
     "System.IterationPath": string;
     "System.WorkItemType": string;
     "System.State": string;
+    "System.Reason"?: string;
     "System.Parent"?: number;
     "System.Description"?: string;
     "System.Tags"?: string;
@@ -45,9 +47,11 @@ export function isADOWorkItemBaseFields(x: any): x is ADOWorkItemBaseFields {
     const result = {
         title: typeof x["System.Title"] === "string",
         areaPath: typeof x["System.AreaPath"] === "string",
+        assignedTo: (x["System.AssignedTo"] === undefined || typeof x["System.AssignedTo"].displayName === "string"),
         iterationPath: typeof x["System.IterationPath"] === "string",
         workItemType: typeof x["System.WorkItemType"] === "string",
         state: typeof x["System.State"] === "string",
+        reason: (x["System.Reason"] === undefined || typeof x["System.Reason"] === "string"),
         parent: (x["System.Parent"] === undefined || typeof x["System.Parent"] === "number"),
         description: (x["System.Description"] === undefined || typeof x["System.Description"] === "string"),
         priority: (x["Microsoft.VSTS.Common.Priority"] === undefined || typeof x["Microsoft.VSTS.Common.Priority"] === "number"),

@@ -2,11 +2,15 @@ import { AdoWit } from "../ado/AdoWit";
 import { njk } from "../njk";
 import { writeFile } from "../utils";
 import { WalkedNode } from "../Walker";
-import { ADOWorkItem, ADOWorkItemComment, ADOWorkItemRel, WorkItem, WorkItemFactoryIf } from "./types";
+import { ADOWorkItem, ADOWorkItemComment, ADOWorkItemRel, ADOWorkItemUser, WorkItem, WorkItemFactoryIf } from "./types";
 
 export interface RelatedWorkItem extends ADOWorkItemRel {
     id: number;
     workitem: WorkItem;
+}
+
+export interface User {
+    displayName: string;
 }
 
 export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
@@ -14,17 +18,21 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
     id: number;
     title: string;
     areaPath: string;
+    assignedTo?: User;
     iterationPath: string;
     workItemType: string;
     state: string;
+    reason?: string;
     parent?: number;
     description?: string;
     relations: ADOWorkItemRel[];
     url: string;
     tags: string[];
-    comments: undefined | ADOWorkItemComment[] = undefined;
     priority?: number;
     severity?: string;
+
+    comments: undefined | ADOWorkItemComment[] = undefined;
+    related: undefined | RelatedWorkItem[] = undefined;
 
     protected get adoWit(): AdoWit {
         if (!this._adoWit) {
@@ -41,9 +49,11 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
         this.id = data.id;
         this.title = data.fields["System.Title"];
         this.areaPath = data.fields["System.AreaPath"];
+        this.assignedTo = data.fields["System.AssignedTo"];
         this.iterationPath = data.fields["System.IterationPath"];
         this.workItemType = data.fields["System.WorkItemType"];
         this.state = data.fields["System.State"];
+        this.reason = data.fields["System.Reason"];
         this.parent = data.fields["System.Parent"];
         this.description = data.fields["System.Description"];
         this.relations = data.relations || [];
@@ -82,24 +92,26 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
 
     async processNode(): Promise<void> {
         await this.getComments();
+        await this.getRelatedWorkItems();
         await writeFile(await this.render(), `workitems/${this.id}.html`);
         // await writeFile(JSON.stringify(feature), `out/feature-${feature.id}.json`);
     }
 
-    async getRelatedWorkItems(filterFn?: (x: ADOWorkItemRel & { id: number }) => boolean): Promise<RelatedWorkItem[]> {
-        const rels = this.getRelatedWorkItemRecords().filter(filterFn || (() => true));
-        return (await this.factory.getById(rels.map(rel => rel.id)))
-            .map(workitem => ({
-                ...rels.find(r => r.id === workitem?.id) as ADOWorkItemRel & { id: number },
-                workitem
-            }));
+    async getRelatedWorkItems(): Promise<RelatedWorkItem[]> {
+        if (this.related === undefined) {
+            const rels = this.getRelatedWorkItemRecords();
+            this.related =  (await this.factory.getById(rels.map(rel => rel.id)))
+                .map(workitem => ({
+                    ...rels.find(r => r.id === workitem?.id) as ADOWorkItemRel & { id: number },
+                    workitem
+                }));
+        }
+        return this.related;
     }
 
     async render(template = 'workitem.njk', data: object = {}): Promise<string> {
         const combinedData = {
             item: this,
-            related: await this.getRelatedWorkItems(),
-            comments: await this.getComments(),
             ...data
         };
         return await njk(template, combinedData);

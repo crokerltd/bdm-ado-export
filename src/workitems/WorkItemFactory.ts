@@ -8,7 +8,7 @@ import { Level } from 'level'
 
 export class WorkItemFactory {
 
-    private db = new Level<string, any>('./out/db', { valueEncoding: 'json' });
+    public static useCache: boolean = false;
 
     private static instance: WorkItemFactory;
     public static getInstance(): WorkItemFactory {
@@ -18,7 +18,8 @@ export class WorkItemFactory {
         return WorkItemFactory.instance;
     }
 
-    // protected cache: Map<number, ADOWorkItem> = new Map<number, ADOWorkItem>;
+    protected cache: Map<number, ADOWorkItem> = new Map<number, ADOWorkItem>;
+    private db = new Level<string, any>('./out/db', { valueEncoding: 'json' });
 
     close(): Promise<void> {
         return this.db.close()
@@ -34,9 +35,19 @@ export class WorkItemFactory {
         return this.getById(workItems)
     }
 
-    async getById(id: number): Promise<WorkItem | undefined>;
-    async getById(id: number[]): Promise<(WorkItem)[]>;
-    async getById(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
+    getById(id: number): Promise<WorkItem | undefined>;
+    getById(id: number[]): Promise<(WorkItem)[]>;
+    getById(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
+        if (Array.isArray(id)) {
+            return (WorkItemFactory.useCache) ? this.getByIdFromLocal(id) : this.getByIdFromMemCache(id)
+        } else {
+            return (WorkItemFactory.useCache) ? this.getByIdFromLocal(id) : this.getByIdFromMemCache(id)
+        }
+    }
+
+    async getByIdFromLocal(id: number): Promise<WorkItem | undefined>;
+    async getByIdFromLocal(id: number[]): Promise<(WorkItem)[]>;
+    async getByIdFromLocal(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
         if (Array.isArray(id)) {
 
             const temp: { [key: number]: ADOWorkItem | undefined } = {}
@@ -68,7 +79,6 @@ export class WorkItemFactory {
         } else {
             const strId: string = `${id}`
             var result: ADOWorkItem | undefined = await this.db.get(strId)
-            console.log('x', result, 'x')
             if (result === undefined) {
                 result = await this.getByIdFromADO(id);
                 if (result !== undefined) {
@@ -79,7 +89,6 @@ export class WorkItemFactory {
         }
     }
 
-    /*
     async getByIdFromMemCache(id: number): Promise<WorkItem | undefined>;
     async getByIdFromMemCache(id: number[]): Promise<(WorkItem)[]>;
     async getByIdFromMemCache(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
@@ -104,7 +113,6 @@ export class WorkItemFactory {
             return this.convert(wi);
         }
     }
-    */
 
     private async getByIdFromADO(id: number): Promise<ADOWorkItem | undefined>;
     private async getByIdFromADO(id: number[]): Promise<ADOWorkItem[]>;
