@@ -64,20 +64,29 @@ function prodBugNjk(env: nunjucks.Environment) {
  * Main function
  */
 (async () => {
-  if (process.argv.includes('CACHE')) {
-    WorkItemFactory.useCache = true;
+  if (process.argv.includes('cache')) {
+    console.log("using local cache")
+    WorkItemFactory.useCache.wiql = true;
+    WorkItemFactory.useCache.comments = true;
+    WorkItemFactory.useCache.workitems = true;
   }
-  WorkItemFactory.useCache = false;
-  switch (process.argv[2]) {
-    case 'features':
-      console.log('exporting features');
-      await exportFeatures();
-      break;
-    case 'prod-bugs':
-      console.log('exporting production bugs');
-      await exportProdBugs();
-      break;
+
+  if (process.argv.includes('cache-items')) {
+    console.log("using local workitems cache")
+    WorkItemFactory.useCache.comments = true;
+    WorkItemFactory.useCache.workitems = true;
   }
+
+  if (process.argv.includes('features')) {
+    console.log('exporting features');
+    await exportFeatures();
+  }
+
+  if (process.argv.includes('prod-bugs')) {
+    console.log('exporting production bugs');
+    await exportProdBugs();
+  }
+
   await WorkItemFactory.getInstance().close()
 })();
 

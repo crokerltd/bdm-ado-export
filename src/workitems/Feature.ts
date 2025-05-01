@@ -50,10 +50,6 @@ export class Feature extends BaseWorkItem {
         return this.factory.getByWiql(`[System.WorkItemType] == "Hybrid Story" AND [System.Parent] = ${this.id}`);
     }
 
-    async render(template = 'feature-workitem.njk'): Promise<string> {
-        return super.render(template)
-    }
-
 }
 
 /*

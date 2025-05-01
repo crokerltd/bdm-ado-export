@@ -1,0 +1,29 @@
+BODY {
+  font-family: Arial, Helvetica, sans-serif;
+  width: 100%;
+}
+
+table.striped {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table.striped,
+th,
+td {
+  border: 1px solid black;
+}
+
+th,
+td {
+  padding: 8px;
+  text-align: left;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+tr:nth-child(odd) {
+  background-color: #ffffff;
+}

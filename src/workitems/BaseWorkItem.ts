@@ -34,14 +34,6 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
     comments: undefined | ADOWorkItemComment[] = undefined;
     related: undefined | RelatedWorkItem[] = undefined;
 
-    protected get adoWit(): AdoWit {
-        if (!this._adoWit) {
-            this._adoWit = AdoWit.getInstance();
-        }
-        return this._adoWit;
-    }
-    private _adoWit: AdoWit | undefined;
-
     constructor(
         public readonly data: ADOWorkItem,
         public readonly factory: WorkItemFactoryIf
@@ -81,7 +73,7 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
 
     async getComments(): Promise<ADOWorkItemComment[]> {
         if (this.comments === undefined) {
-            this.comments = (await this.adoWit.getWorkItemComments(this.id)).comments;
+            this.comments = await this.factory.getWorkItemComments(this.id);
         }
         return this.comments || [];
     }
@@ -116,15 +108,6 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
         };
         return await njk(template, combinedData);
     }
-
-    /*
-    async getTags(): Promise<WorkItemComment[]> {
-        if (this.tags === undefined) {
-            this.comments = (await this.adoWit.getTags(this.id));
-        }
-        return this.comments || [];
-    }
-    */
 
 }
 

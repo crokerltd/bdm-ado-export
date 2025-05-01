@@ -1,0 +1,77 @@
+.kanban-swimlane {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+  justify-content: space-around;
+  flex-grow: calc();
+}
+
+.kanban-column {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+  background-color: #f2f2f2;
+}
+
+.kanban-col-header {
+  font-weight: bold;
+}
+
+.kanban-item {
+  font-size: 10px;
+  margin: 5px;
+  padding: 2px;
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+}
+
+.kanban-item-1 {
+  background-color: lightcoral;
+}
+
+.kanban-item-2 {
+  background-color: lightblue;
+}
+
+.kanban-item-3 {
+  background-color: lightblue;
+}
+
+.kanban-item-4 {
+  background-color: lightgreen;
+}
+
+.kanban-item-header {
+  margin-bottom: 2px;
+}
+
+.kanban-item-field {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: row;
+}
+
+.kanban-item-field-label {
+  flex: 20%;
+  font-weight: bold;
+}
+
+.kanban-item-field-content {
+  flex: 80%;
+}
+
+.kanban-item-group-label {
+  font-weight: bold;
+}
+
+.kanban-relatedworkitems-container {
+  display: flex;
+  flex-wrap: nowrap;
+  flex-direction: column;
+}
+
+.kanban-relatedworkitems-item {
+  margin: 5px;
+  background-color: lightgreen;
+}

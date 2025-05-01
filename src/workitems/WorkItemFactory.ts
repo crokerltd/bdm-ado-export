@@ -3,12 +3,17 @@ import { BaseWorkItem } from "./BaseWorkItem";
 import { Bug, isADOBugWorkItem } from "./Bug";
 import { Feature, isADOFeatureWorkItem } from "./Feature";
 import { HybridStory } from "./HybridStory";
-import { ADOWorkItem, WorkItem, isADOWorkItem } from "./types";
+import { ADOWorkItem, ADOWorkItemComment, WorkItem, WorkItemFactoryIf, isADOWorkItem } from "./types";
 import { Level } from 'level'
+import { createHash } from "crypto";
 
-export class WorkItemFactory {
+export class WorkItemFactory implements WorkItemFactoryIf {
 
-    public static useCache: boolean = false;
+    public static useCache = {
+        wiql: false,
+        workitems: false,
+        comments: false
+    };
 
     private static instance: WorkItemFactory;
     public static getInstance(): WorkItemFactory {
@@ -18,42 +23,93 @@ export class WorkItemFactory {
         return WorkItemFactory.instance;
     }
 
-    protected cache: Map<number, ADOWorkItem> = new Map<number, ADOWorkItem>;
-    private db = new Level<string, any>('./out/db', { valueEncoding: 'json' });
+    protected workitemCache: Map<number, ADOWorkItem> = new Map<number, ADOWorkItem>;
+    protected commentCache: Map<number, ADOWorkItemComment[]> = new Map<number, ADOWorkItemComment[]>;
+
+    private get db(): Level<string, any> {
+        if (this._db === undefined) {
+            this._db = new Level<string, any>(__dirname + '/../../db', { valueEncoding: 'json' });
+        }
+        return this._db;
+    }
+    private _db: Level<string, any> | undefined;
 
     close(): Promise<void> {
-        return this.db.close()
+        if (this._db !== undefined) {
+            return this._db.close()
+        } else {
+            return Promise.resolve()
+        }
     }
 
     async getByWiql(wiqlWhereClause: string): Promise<WorkItem[]> {
+        const ids = await this.getIdsFromWiqlFromLocal(wiqlWhereClause)
+        return this.getById(ids);
+    }
+
+    private async getIdsFromWiqlFromLocal(wiqlWhereClause: string): Promise<number[]> {
+        const key = createHash('md5').update(wiqlWhereClause).digest('hex')
+        var result: number[] | undefined = (WorkItemFactory.useCache.wiql) ? await this.db.get(`wiqi-${key}`) : undefined;
+        if (result === undefined) {
+            result = await this.getIdsFromWiqlFromADO(wiqlWhereClause)
+            await this.db.put(`wiqi-${key}`, result);
+        }
+        return result;
+    }
+
+    private async getIdsFromWiqlFromADO(wiqlWhereClause: string): Promise<number[]> {
+        console.log('fetching wiql from ADO:', wiqlWhereClause)
         const adoWit = AdoWit.getInstance();
-        const workItems = await adoWit.adoGetIdsFromWiql(`
+        return adoWit.adoGetIdsFromWiql(`
         SELECT [System.Id]
         FROM workitems
         WHERE ${wiqlWhereClause}`
         );
-        return this.getById(workItems)
     }
 
-    getById(id: number): Promise<WorkItem | undefined>;
-    getById(id: number[]): Promise<(WorkItem)[]>;
-    getById(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
+    async getById(id: number): Promise<WorkItem | undefined>;
+    async getById(id: number[]): Promise<(WorkItem)[]>;
+    async getById(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
         if (Array.isArray(id)) {
-            return (WorkItemFactory.useCache) ? this.getByIdFromLocal(id) : this.getByIdFromMemCache(id)
+            if (id.length === 0) {
+                return [];
+            }
+            const fetchResult = await this.getByIdFromLocal(id.filter(i => !this.workitemCache.has(i)));
+            for (const i of fetchResult.filter(i => i !== undefined)) {
+                this.workitemCache.set(i.id, i);
+            }
+            return id
+                .map(i => this.workitemCache.get(i))
+                .filter(i => i !== undefined)
+                .map(i => this.convert(i)) as WorkItem[];
+
         } else {
-            return (WorkItemFactory.useCache) ? this.getByIdFromLocal(id) : this.getByIdFromMemCache(id)
+            if (!this.workitemCache.has(id)) {
+                const result = await this.getByIdFromLocal(id);
+                if (result !== undefined) {
+                    this.workitemCache.set(id, result);
+                }
+            }
+            const wi = this.workitemCache.get(id);
+
+            return this.convert(wi);
         }
     }
 
-    async getByIdFromLocal(id: number): Promise<WorkItem | undefined>;
-    async getByIdFromLocal(id: number[]): Promise<(WorkItem)[]>;
-    async getByIdFromLocal(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
+    private async getByIdFromLocal(id: number): Promise<ADOWorkItem | undefined>;
+    private async getByIdFromLocal(id: number[]): Promise<(ADOWorkItem)[]>;
+    private async getByIdFromLocal(id: number | number[]): Promise<ADOWorkItem | undefined | ADOWorkItem[]> {
         if (Array.isArray(id)) {
 
             const temp: { [key: number]: ADOWorkItem | undefined } = {}
 
-            const cacheResults = await this.db.getMany(id.map(x => `${x}`))
-            id.forEach((v, i) => { temp[v] = cacheResults[i] })
+            var cacheResults: (ADOWorkItem | undefined)[] = [];
+            if (WorkItemFactory.useCache.workitems) {
+                cacheResults = await this.db.getMany(id.map(x => `workitem-${x}`))
+                id.forEach((v, i) => { temp[v] = cacheResults[i] })
+            } else {
+                cacheResults = id.map(i => undefined)
+            }
 
             const fetchIds = id.filter((v, i) => cacheResults[i] === undefined) as number[]
             const fetchResults = await this.getByIdFromADO(fetchIds);
@@ -64,7 +120,7 @@ export class WorkItemFactory {
                     if (fetchResults[i] !== undefined) {
                         return {
                             type: 'put',
-                            key: `${v}`,
+                            key: `workitem-${v}`,
                             value: fetchResults[i]
                         }
                     }
@@ -73,50 +129,26 @@ export class WorkItemFactory {
 
             return id
                 .map(i => temp[i])
-                .filter(i => i !== undefined)
-                .map(i => this.convert(i)) as WorkItem[];
-
+                .filter(i => i !== undefined) as ADOWorkItem[];
         } else {
-            const strId: string = `${id}`
-            var result: ADOWorkItem | undefined = await this.db.get(strId)
+            const strId: string = `workitem-${id}`
+            var result: ADOWorkItem | undefined = (WorkItemFactory.useCache.workitems) ? await this.db.get(strId) : undefined;
             if (result === undefined) {
                 result = await this.getByIdFromADO(id);
                 if (result !== undefined) {
                     await this.db.put(strId, result);
                 }
             }
-            return this.convert(result);
-        }
-    }
-
-    async getByIdFromMemCache(id: number): Promise<WorkItem | undefined>;
-    async getByIdFromMemCache(id: number[]): Promise<(WorkItem)[]>;
-    async getByIdFromMemCache(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
-
-        if (Array.isArray(id)) {
-            const fetchResult = await this.getByIdFromADO(id.filter(i => !this.cache.has(i)));
-            for (const i of fetchResult) {
-                this.cache.set(i.id, i);
-            }
-            return id
-                .map(i => this.cache.get(i))
-                .filter(i => i !== undefined)
-                .map(i => this.convert(i)) as WorkItem[];
-        } else {
-            if (!this.cache.has(id)) {
-                const result = await this.getByIdFromADO(id);
-                if (result !== undefined) {
-                    this.cache.set(id, result);
-                }
-            }
-            const wi = this.cache.get(id);
-            return this.convert(wi);
         }
     }
 
     private async getByIdFromADO(id: number): Promise<ADOWorkItem | undefined>;
     private async getByIdFromADO(id: number[]): Promise<ADOWorkItem[]>;
     private async getByIdFromADO(id: number | number[]): Promise<ADOWorkItem | undefined | ADOWorkItem[]> {
+        if (Array.isArray(id) && id.length === 0) {
+            return [];
+        }
+        console.log('fetching workitems from ADO:', id)
         const adoWit = AdoWit.getInstance();
         const workItems = await adoWit.getWorkItems(
             Array.isArray(id) ? id : [id]
@@ -155,6 +187,33 @@ export class WorkItemFactory {
             console.error('Data does not comply with BaseWorkItem', data.fields['System.WorkItemType'])
             return undefined;
         }
+    }
+
+    async getWorkItemComments(id: number): Promise<ADOWorkItemComment[]> {
+        var result = this.commentCache.get(id);
+        if (result === undefined) {
+            result = await this.getWorkItemCommentsFromLocal(id);
+            this.commentCache.set(id, result);
+        }
+        return result;
+    }
+
+    private async getWorkItemCommentsFromLocal(id: number): Promise<ADOWorkItemComment[]> {
+        const strId: string = `comments-${id}`
+        var result: ADOWorkItemComment[] | undefined = (WorkItemFactory.useCache.comments) ? await this.db.get(strId) : undefined;
+        if (result === undefined) {
+            result = await this.getWorkItemCommentsFromADO(id);
+            if (result !== undefined) {
+                await this.db.put(strId, result);
+            }
+        }
+        return result;
+    }
+
+    private async getWorkItemCommentsFromADO(id: number): Promise<ADOWorkItemComment[]> {
+        console.log('fetching comments from ADO:', id)
+        const adoWit = AdoWit.getInstance();
+        return (await adoWit.getWorkItemComments(id)).comments || [];
     }
 
 }

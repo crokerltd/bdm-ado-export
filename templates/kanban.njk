@@ -1,3 +1,35 @@
+{% macro kanbanRelatedWorkItems(title="Related Items", relatedItems=[]) %}
+{% if relatedItems.length %}
+<div class="kanban-item-group-label">{{ title }}</div>
+<div class="kanban-relatedworkitems-container">
+  {% for child in relatedItems %}
+   <div class="kanban-relatedworkitems-item">
+    {{ child.workitem.workItemType }} {{ child.workitem.state }} {{ kanbanWorkItemLink(child) }}  : {{ child.workitem.title }} [{{ child.workitem.assignedTo.displayName }}]
+   </div>
+   {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro kanbanItemField(label, value, test=true) %}
+{% if test %}
+<div class="kanban-item-field">
+  <div class="kanban-item-field-label">{{ label }}</div>
+  <div class="kanban-item-field-content">{{ value }}</div>
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro kanbanItemHeader(item) %}
+<div class="kanban-item-header">
+  {{ kanbanWorkItemLink(item) }} {{ item.title }}
+</div>
+{% endmacro %}
+
+{% macro kanbanWorkItemLink( item ) %}
+  <A HREF="https://dev.azure.com/VP-BD/BDC/_workitems/edit/{{ item.id }}/" TARGET="ADOITEM">{{ item.id }}</A>
+{% endmacro %}
+
 <HTML>
     <HEAD>
         <TITLE>
@@ -5,7 +37,8 @@
                 WorkItems
             {% endblock %}
         </TITLE>
-        <LINK REL="stylesheet" TYPE="text/css" HREF="styles.css"/>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/global.css"/>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/kanban.css"/>
         <style type="text/css">
               .kanban-column-width {
                 width: {{ 95 / states.length }}%
@@ -37,9 +70,9 @@
                     
                       {% block item %}
                       <div class="kanban-item">
-                        <A HREF="./workitems/{{ item.id }}.html">
-                          {{ item.id }} : {{ item.title }}
-                        </A>
+                        {{ kanbanItemHeader(item) }}
+                        {{ kanbanItemField( "Assigned", item.assignedTo.displayName ) }}
+                        {{ kanbanItemField( "Priority", item.priority ) }}
                        </div>
                       {% endblock %}  
                   {% endif %}

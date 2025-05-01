@@ -51,33 +51,6 @@ div.tags {
 
 }
 
-table.striped {
-  width: 100%;
-  border-collapse: collapse;
-}
-
-table.striped,
-th,
-td {
-  border: 1px solid black;
-}
-
-th,
-td {
-  padding: 8px;
-  text-align: left;
-}
-
-tr:nth-child(even) {
-  background-color: #f2f2f2;
-}
-
-tr:nth-child(odd) {
-  background-color: #ffffff;
-}
-
-
-
 .banner-container {
   display: flex;
   flex-wrap: wrap;
@@ -113,66 +86,4 @@ tr:nth-child(odd) {
   .banner-item-right, .banner-item-left {
     flex: 100%;
   }
-}
-
-.kanban-swimlane {
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: row;
-  justify-content: space-around;
-  flex-grow: calc();
-}
-
-.kanban-column {
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: column;
-  background-color: #f2f2f2;
-}
-
-.kanban-col-header {
-  font-weight: bold;
-}
-
-.kanban-item {
-  font-size: 10px;
-  margin: 5px;
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: column;
-}
-
-.kanban-item-1 {
-  background-color: lightcoral;
-}
-
-.kanban-item-2 {
-  background-color: lightblue;
-}
-
-.kanban-item-3 {
-  background-color: lightblue;
-}
-
-.kanban-item-4 {
-  background-color: lightgreen;
-}
-
-.kanban-item-header {
-  margin-bottom: 2px;
-}
-
-.kanban-item-field {
-  display: flex;
-  flex-wrap: nowrap;
-  flex-direction: row;
-}
-
-.kanban-item-field-label {
-  flex: 20%;
-  font-weight: bold;
-}
-
-.kanban-item-field-content {
-  flex: 80%;
 }

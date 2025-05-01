@@ -37,20 +37,9 @@ export class Bug extends BaseWorkItem {
         this.partner = data.fields["Custom.Partner"];
     }
 
-    /*
-    async getRelatedNodes(): Promise<WalkedNode<BaseWorkItem>[]> {
-        return this.factory.getByWiql(`[System.WorkItemType] == "Task" AND [System.Parent] = ${this.id}`);
+    getRelatedNodes(): Promise<WalkedNode<BaseWorkItem>[]> {
+        return Promise.resolve([]);
     }
-  
-
-    async processNode(): Promise<void> {
-        await super.processNode();
-    }
-
-    async render(template = 'bug-workitem.njk'): Promise<string> {
-        return super.render(template)
-    }
-      */
 
 }
 

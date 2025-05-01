@@ -7,6 +7,7 @@ export interface WorkItemFactoryIf {
     getByWiql(wiqlWhereClause: string): Promise<WorkItem[]>;
     getById(id: number): Promise<WorkItem | undefined>;
     getById(id: number[]): Promise<WorkItem[]>;
+    getWorkItemComments(id: number): Promise<ADOWorkItemComment[]>;
 }
 
 export type WorkItem = BaseWorkItem | Feature | HybridStory | Bug;
