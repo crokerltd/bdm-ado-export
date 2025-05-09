@@ -52,7 +52,7 @@
 {% endmacro %}
 
 {% macro workItemListItem(item) %}
-    <LI class="bowtie-icon {{workItemIconClass(item)}}" {{ workItemIconStyle(item) }}><span style="color: black;">{{ workItemIdHref(item) }} : {{ item.title }}</span></LI>
+    <LI class="bowtie-icon {{workItemIconClass(item)}}" {{ workItemIconStyle(item) }}><span style="color: black;">{{ workItemIdHref(item) }} {{ item.title }}</span></LI>
 {% endmacro %}
 
 {% macro workItemList(items) %}
