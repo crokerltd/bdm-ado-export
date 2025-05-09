@@ -32,9 +32,9 @@
                     <TD>{{ item.assignedTo.displayName }}</TD>
                     <TD>{{ item.aprilComplete | yesNo }}</TD>
                     <TD>{{ item.mayComplete | yesNo }}</TD>
-                    <TD>{{ common.workItemList(item.opsProcs | relatedWorkItem | excludeStates(['Closed'])) }}</TD>
-                    <TD>{{ common.workItemList(item.bugs | relatedWorkItem | includeIterationPaths(['R3.0.4']) | excludeStates(['Closed'])) }}</TD>
-                    <TD>{{ common.workItemList(item.bugs | relatedWorkItem | excludeIterationPaths(['R3.0.4']) | excludeStates(['Closed'])) }}</TD>
+                    <TD>{{ common.workItemList(item.opsProcs | relatedWorkItem | wiFilterExcludeStates(['Closed'])) }}</TD>
+                    <TD>{{ common.workItemList(item.bugs | relatedWorkItem | wiFilterIncludeIterationPaths(['R3.0.4']) | wiFilterExcludeStates(['Closed'])) }}</TD>
+                    <TD>{{ common.workItemList(item.bugs | relatedWorkItem | wiFilterExcludeIterationPaths(['R3.0.4']) | wiFilterExcludeStates(['Closed'])) }}</TD>
                 </TR>
             {% endfor %}
     </TABLE>

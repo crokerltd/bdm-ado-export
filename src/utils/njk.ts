@@ -46,17 +46,17 @@ export async function njk(template: string, context: object = {}, mod?: (e: nunj
             }
             return b.slice(0, count)
         });
-        env.addFilter('excludeStates', function (items: BaseWorkItem[], excludeStates: string[]) {
+        env.addFilter('wiFilterExcludeStates', function (items: BaseWorkItem[], excludeStates: string[]) {
             return items?.filter(i => !excludeStates.includes(i.state))
         })
-        env.addFilter('includeStates', function (items: BaseWorkItem[], includeStates: string[]) {
+        env.addFilter('wiFilterIncludeStates', function (items: BaseWorkItem[], includeStates: string[]) {
             return items?.filter(i => includeStates.includes(i.state))
         })
-        env.addFilter('includeIterationPaths', function (items: BaseWorkItem[], includePaths: string[]) {
+        env.addFilter('wiFilterIncludeIterationPaths', function (items: BaseWorkItem[], includePaths: string[]) {
             const pathRegExp = includePaths.map(p => new RegExp(p))
             return items?.filter(i => pathRegExp.some(p => p.test(i.iterationPath)))
         })
-        env.addFilter('excludeIterationPaths', function (items: BaseWorkItem[], excludePaths: string[]) {
+        env.addFilter('wiFilterExcludeIterationPaths', function (items: BaseWorkItem[], excludePaths: string[]) {
             const pathRegExp = excludePaths.map(p => new RegExp(p))
             return items?.filter(i => !pathRegExp.some(p => p.test(i.iterationPath)))
         })
