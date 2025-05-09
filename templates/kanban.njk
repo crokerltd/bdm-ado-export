@@ -1,10 +1,12 @@
-{% macro kanbanRelatedWorkItems(title="Related Items", relatedItems=[]) %}
+{% import "common.njk" as common %}
+
+{% macro kanbanRelatedWorkItems(title="Related Items", relatedItems=[], style="kanban-relatedworkitems-item-default") %}
 {% if relatedItems.length %}
-<div class="kanban-item-group-label">{{ title }}</div>
+{{ kanbanItemGroupLabel(title) }}
 <div class="kanban-relatedworkitems-container">
   {% for child in relatedItems %}
-   <div class="kanban-relatedworkitems-item">
-    {{ child.workitem.workItemType }} {{ child.workitem.state }} {{ kanbanWorkItemLink(child) }}  : {{ child.workitem.title }} [{{ child.workitem.assignedTo.displayName }}]
+   <div class="kanban-relatedworkitems-item {{ style }}">
+    {{ child.workitem.workItemType }} {{ child.workitem.state }} {{ common.workItemIdTitle(child, true) }}  [{{ child.workitem.assignedTo.displayName }}]
    </div>
    {% endfor %}
 </div>
@@ -26,8 +28,27 @@
 </div>
 {% endmacro %}
 
-{% macro kanbanWorkItemLink( item ) %}
-  <A HREF="https://dev.azure.com/VP-BD/BDC/_workitems/edit/{{ item.id }}/" TARGET="ADOITEM">{{ item.id }}</A>
+{% macro kanbanItemGroupLabel(title) %}
+<div class="kanban-item-group-label">{{ title }}</div>
+{% endmacro %}
+
+{% macro kanbanItemComments(title = "Comments", comments = []) %}
+{% if comments.length %}
+{{ kanbanItemGroupLabel(title) }}
+<div class="kanban-comments-container">
+  {% for comment in comments %}
+   <div class="kanban-comments-item-text">
+    {{ comment.text | cleanHtml }}
+   </div>
+   {% endfor %}
+</div>
+{% endif %}
+{% endmacro %}
+
+{% macro kanbanItemTextblock(contents) %}
+<div class="kanban-item-textblock">
+  {{ contents | cleanHtml }}
+</div>
 {% endmacro %}
 
 <HTML>
@@ -45,6 +66,8 @@
               }
 
             </style>
+            {% block head %}
+            {% endblock %}
     </HEAD>
     <BODY>
         <H1>

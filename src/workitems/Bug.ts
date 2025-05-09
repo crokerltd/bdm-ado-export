@@ -1,9 +1,8 @@
-import { WalkedNode } from "../Walker";
 import { BaseWorkItem } from "./BaseWorkItem";
 import { ADOWorkItem, ADOWorkItemBaseFields, WorkItemFactoryIf, isADOWorkItem } from "./types";
 
 export function isADOBugWorkItem(x: any): x is ADOWorkItem<ADOWorkItemBugFields> {
-    return isADOWorkItem(x) && isADOWorkItemBugFields(x.fields)
+    return isADOWorkItem(x) && x.fields["System.WorkItemType"] === "Bug" &&  isADOWorkItemBugFields(x.fields)
 }
 
 export interface ADOWorkItemBugFields extends ADOWorkItemBaseFields {
@@ -30,15 +29,11 @@ export class Bug extends BaseWorkItem {
     reproSteps?: string;
     partner?: string;
 
-    constructor(data: ADOWorkItem<ADOWorkItemBugFields>, factory: WorkItemFactoryIf) {
-        super(data, factory);
+    constructor(data: ADOWorkItem<ADOWorkItemBugFields>, factory: WorkItemFactoryIf, leafNode?: boolean) {
+        super(data, factory, leafNode);
         this.workaround = data.fields["Custom.Workaround"];
         this.reproSteps= data.fields["Microsoft.VSTS.TCM.ReproSteps"];
         this.partner = data.fields["Custom.Partner"];
-    }
-
-    getRelatedNodes(): Promise<WalkedNode<BaseWorkItem>[]> {
-        return Promise.resolve([]);
     }
 
 }

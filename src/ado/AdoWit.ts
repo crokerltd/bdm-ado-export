@@ -1,7 +1,7 @@
 import { WebApi } from 'azure-devops-node-api';
 import { IWorkItemTrackingApi } from 'azure-devops-node-api/WorkItemTrackingApi';
 import { SendMailBody, WorkItemErrorPolicy, WorkItemExpand } from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
-import { chunkArray } from '../utils';
+import { chunkArray } from '../utils/utils';
 import { AdoBase } from './AdoBase';
 // import * as lim from "azure-devops-node-api/interfaces/LocationsInterfaces";
 
@@ -20,6 +20,12 @@ export class AdoWit extends AdoBase {
 
     private constructor(projectId?: string, orgId?: string, token?: string) {
         super(projectId, orgId, token);
+    }
+
+    async getWorkItemIcons() {
+        const witApi: IWorkItemTrackingApi = await this.getWitClient();
+        const result = await witApi.getWorkItemIcons()
+        console.log(result)    
     }
 
     async getAllTags(): Promise<any> {

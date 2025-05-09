@@ -1,80 +1,34 @@
-import { writeFile } from "./utils";
-import { njk } from "./njk";
 import { WorkItemFactory } from "./workitems/WorkItemFactory";
-import { Walker } from "./Walker";
-import { WorkItem } from "./workitems/types";
-import * as nunjucks from 'nunjucks';
-
-export async function exportFeatures() {
-  const factory = WorkItemFactory.getInstance();
-  const features = (await factory.getByWiql(`
-    [System.WorkItemType] == "Feature"
-    AND [System.State] <> "Removed"
-    AND (
-      [System.IterationPath] UNDER 'BDC\\OAS\\R1'
-      OR [System.IterationPath] UNDER 'BDC\\OAS\\R2'
-    )`)).slice(0, 10);
-  const walker = new Walker<WorkItem>();
-  await walker.walk(features);
-  await writeFile(await njk('feature-index.njk', { items: features }), 'feature-index.html');
-}
-
-export async function exportProdBugs() {
-  const factory = WorkItemFactory.getInstance();
-  const bugs = (await factory.getByWiql(`
-    [System.WorkItemType] == 'Bug'
-    AND [Microsoft.VSTS.Common.Priority] IN ( 1, 2 )
-    AND (
-      [System.IterationPath] UNDER 'BDC\\OAS\\Production'
-      OR ( [System.IterationPath] UNDER 'BDC\\OAS\\R3\\R3.0' AND [System.IterationLevel5] CONTAINS 'R' )
-    )
-    AND [System.State] != 'Closed'
-  `));
-  const walker = new Walker<WorkItem>();
-  await walker.walk(bugs);
-  await writeFile(await njk('prod-bug-index.njk', { items: bugs }, prodBugNjk), 'prod-bug-index.html');
-
-  const swimlanes = ['Production', 'R3.0.4.0 (patch)'];
-  const swimlaneItems = bugs.map(i => ({
-    ...i,
-    swimlane: (() => {
-      const s = i.iterationPath.replace(/BDC\\OAS\\(R3\\R3.0\\)?/g, '')
-      if (swimlanes.includes(s)) {
-        return s
-      } else {
-        return undefined
-      }
-    })(),
-    relatedTasks: i.related?.filter(i => i.workitem.workItemType === 'Task'),
-    relatedDecisions: i.related?.filter(i => i.workitem.workItemType === 'Project Decision')
-  }))
-  await writeFile(await njk('prod-bug-kanban.njk', { items: swimlaneItems, swimlanes }, prodBugNjk), 'prod-bug-kanban.html');
-}
-
-function prodBugNjk(env: nunjucks.Environment) {
-  env.addFilter('shrinkProdIterationPath', function (b?: string) {
-    if (typeof b !== 'string') {
-      return b;
-    }
-    return b.replace(/BDC\\OAS\\(R3\\R3.0\\)?/g, '');
-  })
-}
+import { exportProdBugs } from "./reports/exportProdBugs";
+import { exportFeatures } from "./reports/exportFeatures";
+import { exportProdTracking } from "./reports/exportProdTracking";
+import { WorkItemCache } from "./workitems/WorkItemCache";
 
 /**
  * Main function
  */
 (async () => {
+  const cache = WorkItemCache.getInstance();
+
   if (process.argv.includes('cache')) {
     console.log("using local cache")
-    WorkItemFactory.useCache.wiql = true;
-    WorkItemFactory.useCache.comments = true;
-    WorkItemFactory.useCache.workitems = true;
+    cache.useCache.wiql = true;
+    cache.useCache.comments = true;
+    cache.useCache.workitems = true;
   }
 
   if (process.argv.includes('cache-items')) {
     console.log("using local workitems cache")
-    WorkItemFactory.useCache.comments = true;
-    WorkItemFactory.useCache.workitems = true;
+    cache.useCache.comments = true;
+    cache.useCache.workitems = true;
+  }
+
+  if (process.argv.includes('nocache')) {
+    console.log("disabling all local caching")
+    cache.useCache.wiql = false;
+    cache.useCache.comments = false;
+    cache.useCache.workitems = false;
+    cache.useCache.write = false;
   }
 
   if (process.argv.includes('features')) {
@@ -87,6 +41,11 @@ function prodBugNjk(env: nunjucks.Environment) {
     await exportProdBugs();
   }
 
-  await WorkItemFactory.getInstance().close()
+  if (process.argv.includes('prod-if')) {
+    console.log('exporting production tracking interfaces');
+    await exportProdTracking();
+  }
+
+  await cache.close()
 })();
 

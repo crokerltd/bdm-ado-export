@@ -1,3 +1,5 @@
+{% import "common.njk" as common %}
+
 <HTML>
   <HEAD>
     <LINK REL="stylesheet" TYPE="text/css" HREF="../assets/global.css"/>
@@ -6,12 +8,10 @@
   <BODY>
     <div id="toppane">
       <H1>
-        <A HREF="{{ item.url }}">
           {% block header %}
             {{ item.workItemType }}
-            {{ item.id }} : {{ item.title }}
+            {{ common.workItemIconIdTitle(item) }}
           {% endblock %}
-        </A>
       </H1>
         
       <div class="banner-container">

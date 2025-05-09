@@ -1,6 +1,6 @@
 import { AdoWit } from './AdoWit';
 import { SendMailBody } from 'azure-devops-node-api/interfaces/WorkItemTrackingInterfaces';
-import { njk } from '../njk';
+import { njk } from '../utils/njk';
 import { AssigneeWorkItemData, QueryResults } from '../types';
 
 /**

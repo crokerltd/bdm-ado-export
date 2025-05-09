@@ -27,5 +27,5 @@ export function getEnv(name: string): string {
 }
 
 export function writeFile(data: any, filename: string) {
-    writeFileSync(__dirname + '/../out/' + filename, data, { encoding: 'utf8' })
+    writeFileSync(__dirname + '/../../out/' + filename, data, { encoding: 'utf8' })
 }

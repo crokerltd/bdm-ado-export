@@ -1,0 +1,42 @@
+{% import "common.njk" as common %}
+
+<HTML>
+    <HEAD>
+        <TITLE>
+            Production Bugs
+        </TITLE>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/global.css"/>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/ado-bowtie/style.css"/>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/prod-tracking-index.css"/>
+    </HEAD>
+    <BODY>
+        <H1>
+            Provincial Interfaces
+        </H1>
+        <TABLE class="striped">
+            <TR>
+                <TD>ID</TD>
+                <TD>TITLE</TD>
+                <TD>OWNER</TD>
+                <TD>APRIL</TD>
+                <TD>MAY</TD>
+                <TD>OPS PROCS</TD>
+                <TD>BUGS R3.0.4</TD>
+                <TD>BUGS Other</TD>
+            </TR>
+            
+            {% for item in items %}
+                <TR>
+                    <TD>{{ common.workItemIdHref(item, true) }}</TD>
+                    <TD>{{ item.title }}</TD>
+                    <TD>{{ item.assignedTo.displayName }}</TD>
+                    <TD>{{ item.aprilComplete | yesNo }}</TD>
+                    <TD>{{ item.mayComplete | yesNo }}</TD>
+                    <TD>{{ common.workItemList(item.opsProcs | relatedWorkItem | excludeStates(['Closed'])) }}</TD>
+                    <TD>{{ common.workItemList(item.bugs | relatedWorkItem | includeIterationPaths(['R3.0.4']) | excludeStates(['Closed'])) }}</TD>
+                    <TD>{{ common.workItemList(item.bugs | relatedWorkItem | excludeIterationPaths(['R3.0.4']) | excludeStates(['Closed'])) }}</TD>
+                </TR>
+            {% endfor %}
+    </TABLE>
+    </BODY>
+</HTML>

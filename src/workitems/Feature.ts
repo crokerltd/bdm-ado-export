@@ -1,9 +1,9 @@
-import { WalkedNode } from "../Walker";
+import { WalkedNode } from "./Walker";
 import { BaseWorkItem } from "./BaseWorkItem";
 import { ADOWorkItem, ADOWorkItemBaseFields, WorkItemFactoryIf, isADOWorkItem } from "./types";
 
 export function isADOFeatureWorkItem(x: any): x is ADOWorkItem<ADOWorkItemFeatureFields> {
-    return isADOWorkItem(x) && isADOWorkItemFeatureFields(x.fields)
+    return isADOWorkItem(x) && x.fields["System.WorkItemType"] === "Feature" && isADOWorkItemFeatureFields(x.fields)
 }
 
 export interface ADOWorkItemFeatureFields extends ADOWorkItemBaseFields {
@@ -36,8 +36,8 @@ export class Feature extends BaseWorkItem {
     acceptanceCriteria?: string;
     assumptions?: string;
 
-    constructor(data: ADOWorkItem<ADOWorkItemFeatureFields>, factory: WorkItemFactoryIf) {
-        super(data, factory);
+    constructor(data: ADOWorkItem<ADOWorkItemFeatureFields>, factory: WorkItemFactoryIf, leafNode?: boolean) {
+        super(data, factory, leafNode);
         this.featureCategory = data.fields["Custom.FeatureCategory2"];
         this.release = data.fields["Custom.Release"];
         this.plannedDevSprintOAS = data.fields["Custom.PlannedDevSprint_OAS"];

@@ -2,3 +2,56 @@ BODY {
   font-family: Arial, Helvetica, sans-serif;
   width: 100%;
 }
+
+
+
+table.striped {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+table.striped,
+th,
+td {
+  border: 1px solid black;
+}
+
+th,
+td {
+  padding: 8px;
+  text-align: left;
+}
+
+tr:nth-child(even) {
+  background-color: #f2f2f2;
+}
+
+tr:nth-child(odd) {
+  background-color: #ffffff;
+}
+
+
+
+
+
+
+
+
+
+
+
+ul.workitems {
+  --icon-space: 1.3em;
+  list-style: none;
+  padding: 0;
+}
+
+ul.workitems li {
+  padding-left: var(--icon-space);
+}
+
+ul.workitems li:before {
+  display: inline-block;
+  margin-left: calc( var(--icon-space) * -1 );
+  width: var(--icon-space);
+}

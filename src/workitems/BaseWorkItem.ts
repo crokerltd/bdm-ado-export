@@ -1,8 +1,7 @@
-import { AdoWit } from "../ado/AdoWit";
-import { njk } from "../njk";
-import { writeFile } from "../utils";
-import { WalkedNode } from "../Walker";
-import { ADOWorkItem, ADOWorkItemComment, ADOWorkItemRel, ADOWorkItemUser, WorkItem, WorkItemFactoryIf } from "./types";
+import { njk } from "../utils/njk";
+import { writeFile } from "../utils/utils";
+import { WalkedNode } from "./Walker";
+import { ADOWorkItem, ADOWorkItemComment, ADOWorkItemRel, WorkItem, WorkItemFactoryIf } from "./types";
 
 export interface RelatedWorkItem extends ADOWorkItemRel {
     id: number;
@@ -36,7 +35,8 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
 
     constructor(
         public readonly data: ADOWorkItem,
-        public readonly factory: WorkItemFactoryIf
+        public readonly factory: WorkItemFactoryIf,
+        public readonly leafNode: boolean = false,
     ) {
         this.id = data.id;
         this.title = data.fields["System.Title"];
@@ -91,12 +91,16 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
 
     async getRelatedWorkItems(): Promise<RelatedWorkItem[]> {
         if (this.related === undefined) {
-            const rels = this.getRelatedWorkItemRecords();
-            this.related =  (await this.factory.getById(rels.map(rel => rel.id)))
-                .map(workitem => ({
-                    ...rels.find(r => r.id === workitem?.id) as ADOWorkItemRel & { id: number },
-                    workitem
-                }));
+            if (!this.leafNode) {
+                const rels = this.getRelatedWorkItemRecords();
+                this.related = (await this.factory.getById(rels.map(rel => rel.id)))
+                    .map(workitem => ({
+                        ...rels.find(r => r.id === workitem?.id) as ADOWorkItemRel & { id: number },
+                        workitem
+                    }));
+            } else {
+                this.related = [];
+            }
         }
         return this.related;
     }

@@ -1,0 +1,64 @@
+{% set retainServer = false %}
+
+{% macro workItemIconClass(item) %}
+  {% set icon = '' %}
+  {% if item.workItemType == 'Task' %}
+     {% set icon = 'bowtie-symbol-task' %}
+  {% elif item.workItemType == 'Bug' %}
+     {% set icon = 'bowtie-symbol-bug' %}
+   {% elif item.workItemType == 'Ticket' %}
+     {% set icon = 'bowtie-symbol-task' %}
+  {% endif %} 
+  {% if icon != '' %}
+    {{ icon }}
+  {% endif %}
+{% endmacro %}
+
+
+{% macro workItemIconStyle(item) %}
+  {% set color = 'black' %}
+  {% if item.workItemType == 'Task' %}
+     {% set color = 'rgb(141, 197, 75)' %}
+  {% elif item.workItemType == 'Bug' %}
+     {% set color = 'rgb(204, 41, 61)' %}
+   {% elif item.workItemType == 'Ticket' %}
+     {% set color = 'rgb(242, 102, 186)' %}
+  {% endif %} 
+  {% if icon != '' %}
+    style="color: {{color}};"
+  {% endif %}
+{% endmacro %}
+
+
+{% macro workItemIcon(item) %}
+  {% set icon = workItemIconClass(item) %}
+  {% if icon != '' %}
+    <i class="bowtie-icon {{icon}}" {{ workItemIconStyle(item) }}></i>
+  {% endif %}
+{% endmacro %}
+
+
+{% macro workItemIdHref(item) %}
+{% if retainServer %}
+  <A HREF="https://dev.azure.com/VP-BD/BDC/_workitems/edit/{{ item.id }}/" TARGET="ADOITEM">{{ item.id }}</A>
+{% else  %}
+  <A HREF="./workitems/{{ item.id }}.html">{{ item.id }}</A>
+{% endif %}
+{% endmacro %}
+
+
+{% macro workItemIconIdTitle(item) %}
+  {{ workItemIcon(item) }} {{ workItemIdHref(item) }} : {{ item.title }}
+{% endmacro %}
+
+{% macro workItemListItem(item) %}
+    <LI class="bowtie-icon {{workItemIconClass(item)}}" {{ workItemIconStyle(item) }}><span style="color: black;">{{ workItemIdHref(item) }} : {{ item.title }}</span></LI>
+{% endmacro %}
+
+{% macro workItemList(items) %}
+  <UL class="workitems">
+    {% for item in items %}
+       {{ workItemListItem(item) }}
+    {% endfor %}
+  </UL>
+{% endmacro %}

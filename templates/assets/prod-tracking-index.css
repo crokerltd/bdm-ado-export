@@ -1,0 +1,14 @@
+
+i {
+  display: inline-block;
+  min-width: 20px;
+  text-align: center;
+  font-size: 14px;
+  -webkit-font-smoothing: none;
+}
+
+.mls {
+  margin-left: .25em;
+  font-size: 12px;
+}
+

@@ -2,7 +2,7 @@
   "description": "Azure DevOps Utility to send notification emails to workItem assignees",
   "scripts": {
     "build": "tsc && npm run copy",
-    "copy": "copyfiles -f \"templates/assets/*\" out/assets",
+    "copy": "copyfiles -u 2 \"templates/assets/**/*\" out/assets",
     "postinstall": "npm run build",
     "start": "node dist/main.js"
   },

@@ -4,7 +4,7 @@
             Production Bugs
         </TITLE>
         <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/global.css"/>
-        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/prod-bug.css"/>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/prod-bug-index.css"/>
     </HEAD>
     <BODY>
         <H1>
@@ -31,8 +31,8 @@
                     <TD>{{ item.title }}</TD>
                     <TD>{{ item.partner }}</TD>
                     <TD>{{ item.iterationPath | shrinkProdIterationPath }}</TD>
-                    <TD>{{ item.workaround | stripHtml  }}</TD>
-                    <TD>{{ item.comments[0].text | stripHtml }}</TD>
+                    <TD>{{ item.workaround | cleanHtml  }}</TD>
+                    <TD>{{ item.comments[0].text | cleanHtml }}</TD>
                 </TR>
             {% endfor %}
     </TABLE>
