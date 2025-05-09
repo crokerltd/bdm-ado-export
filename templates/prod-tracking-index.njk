@@ -15,20 +15,22 @@
         </H1>
         <TABLE class="striped">
             <TR>
-                <TD>ID</TD>
-                <TD>TITLE</TD>
-                <TD>OWNER</TD>
-                <TD>APRIL</TD>
-                <TD>MAY</TD>
-                <TD>OPS PROCS</TD>
-                <TD>BUGS R3.0.4</TD>
-                <TD>BUGS Other</TD>
+                <TD>Id</TD>
+                <TD>Title</TD>
+                <TD>Comment</TD>
+                <TD>Owner</TD>
+                <TD>April</TD>
+                <TD>May</TD>
+                <TD>Ops Proc</TD>
+                <TD>Bugs R3.0.4</TD>
+                <TD>Bugs Other</TD>
             </TR>
             
             {% for item in items %}
                 <TR>
                     <TD>{{ common.workItemIdHref(item, true) }}</TD>
                     <TD>{{ item.title }}</TD>
+                    <TD>{{ item.commnets[0] | cleanHtml }}</TD>
                     <TD>{{ item.assignedTo.displayName }}</TD>
                     <TD>{{ item.aprilComplete | yesNo }}</TD>
                     <TD>{{ item.mayComplete | yesNo }}</TD>
