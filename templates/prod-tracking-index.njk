@@ -14,13 +14,14 @@
             Provincial Interfaces
         </H1>
         <TABLE class="striped">
-            <TR>
+            <TR class="headings">
                 <TD>Id</TD>
                 <TD>Title</TD>
                 <TD>Comment</TD>
                 <TD>Owner</TD>
                 <TD>April</TD>
                 <TD>May</TD>
+                <TD>Tasks</TD>
                 <TD>Ops Proc</TD>
                 <TD>Bugs R3.0.4</TD>
                 <TD>Bugs Other</TD>
@@ -32,8 +33,9 @@
                     <TD>{{ item.title }}</TD>
                     <TD>{{ item.commnets[0] | cleanHtml }}</TD>
                     <TD>{{ item.assignedTo.displayName }}</TD>
-                    <TD>{{ item.aprilComplete | yesNo }}</TD>
-                    <TD>{{ item.mayComplete | yesNo }}</TD>
+                    <TD>{{ item.aprilComplete | okBlank }}</TD>
+                    <TD>{{ item.mayComplete | okBlank }}</TD>
+                    <TD>{{ common.workItemList(item.tasks | relatedWorkItem | wiFilterExcludeStates(['Closed'])) }}</TD>
                     <TD>{{ common.workItemList(item.opsProcs | relatedWorkItem | wiFilterExcludeStates(['Closed'])) }}</TD>
                     <TD>{{ common.workItemList(item.bugs | relatedWorkItem | wiFilterIncludeIterationPaths(['R3.0.4']) | wiFilterExcludeStates(['Closed'])) }}</TD>
                     <TD>{{ common.workItemList(item.bugs | relatedWorkItem | wiFilterExcludeIterationPaths(['R3.0.4']) | wiFilterExcludeStates(['Closed'])) }}</TD>

@@ -79,6 +79,12 @@ export async function njk(template: string, context: object = {}, mod?: (e: nunj
             }
             return (b) ? 'Yes' : 'No'
         })
+        env.addFilter('okBlank', function (b?: boolean) {
+            if (typeof b !== 'boolean') {
+                return b;
+            }
+            return (b) ? 'Ok' : ''
+        })
 
 
         if (mod !== undefined) {

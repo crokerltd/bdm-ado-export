@@ -38,6 +38,10 @@ export async function exportProdTracking() {
         && i.workitem.title.match(/May Acc?ounting/)
         && i.workitem.state == 'Closed'
       ) || []).length > 0,
+    tasks: (
+      i.related?.filter(i => i.workitem.workItemType === 'Task'
+        && !i.workitem.title.match(/(May|April) Acc?ounting/)
+      )),
     opsProcs: i.related?.filter(i => i.workitem.workItemType == 'Ticket' && i.workitem.title.match(/Operational Procedure/i)),
     bugs: i.related?.filter(i => i.workitem.workItemType == 'Bug')
   }))
