@@ -39,7 +39,7 @@
 
 
 {% macro workItemIdHref(item) %}
-{% if retainServer %}
+{% if useADOUrls %}
   <A HREF="https://dev.azure.com/{{ global.orgId }}/{{ global.projectId }}/_workitems/edit/{{ item.id }}/" TARGET="ADOITEM">{{ item.id }}</A>
 {% else  %}
   <A HREF="./workitems/{{ item.id }}.html">{{ item.id }}</A>
