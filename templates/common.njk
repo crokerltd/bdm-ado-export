@@ -1,5 +1,3 @@
-{% set retainServer = true %}
-
 {% macro workItemIconClass(item) %}
   {% set icon = '' %}
   {% if item.workItemType == 'Task' %}
@@ -38,8 +36,8 @@
 {% endmacro %}
 
 
-{% macro workItemIdHref(item) %}
-{% if useADOUrls %}
+{% macro workItemIdHref(item, global) %}
+{% if global.useADOUrls %}
   <A HREF="https://dev.azure.com/{{ global.orgId }}/{{ global.projectId }}/_workitems/edit/{{ item.id }}/" TARGET="ADOITEM">{{ item.id }}</A>
 {% else  %}
   <A HREF="./workitems/{{ item.id }}.html">{{ item.id }}</A>
@@ -47,18 +45,18 @@
 {% endmacro %}
 
 
-{% macro workItemIconIdTitle(item) %}
-  {{ workItemIcon(item) }} {{ workItemIdHref(item) }} : {{ item.title }}
+{% macro workItemIconIdTitle(item, global) %}
+  {{ workItemIcon(item) }} {{ workItemIdHref(item, global) }} : {{ item.title }}
 {% endmacro %}
 
-{% macro workItemListItem(item) %}
-    <LI class="bowtie-icon {{workItemIconClass(item)}}" {{ workItemIconStyle(item) }}><span style="color: black;">{{ workItemIdHref(item) }} {{ item.title }}</span></LI>
+{% macro workItemListItem(item, global) %}
+    <LI class="bowtie-icon {{workItemIconClass(item)}}" {{ workItemIconStyle(item) }}><span style="color: black;">{{ workItemIdHref(item, global) }} {{ item.title }}</span></LI>
 {% endmacro %}
 
-{% macro workItemList(items) %}
+{% macro workItemList(items, global) %}
   <UL class="workitems">
     {% for item in items %}
-       {{ workItemListItem(item) }}
+       {{ workItemListItem(item, global) }}
     {% endfor %}
   </UL>
 {% endmacro %}

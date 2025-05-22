@@ -10,8 +10,11 @@ import { getEnv } from './utils';
  * @returns        Rendered string
  */
 export async function njk(template: string, context: any = {}, mod?: (e: nunjucks.Environment) => void): Promise<string> {
-    context.global.projectId = getEnv("ADO_API_PROJECT")
-    context.global.orgId = getEnv("ADO_API_ORG")
+    context.global = {
+        ...context.global,
+        projectId: getEnv("ADO_API_PROJECT"),
+        orgId: getEnv("ADO_API_ORG")
+    }
 
     return new Promise<string>(async (resolve, reject) => {
         nunjucks.configure({

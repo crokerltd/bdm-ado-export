@@ -22,7 +22,7 @@
             
             {% for item in items %}
                 <TR>
-                    <TD>{{ common.workItemIdHref(item) }}</TD>
+                    <TD>{{ common.workItemIdHref(item, global) }}</TD>
                     <TD>{{ item.title }}</TD>
                     <TD>{{ item.description | cleanHtml | truncate(1000) }}</TD>
                 </TR>

@@ -18,5 +18,5 @@ export async function exportEIFeatures() {
     `));
   const walker = new Walker<WorkItem>();
   await walker.walk(items);
-  await writeFile(await njk('feature-table.njk', { items }), 'ei-feature-table.html');
+  await writeFile(await njk('feature-table.njk', { items, global : { useADOUrls: true } }), 'ei-feature-table.html');
 }

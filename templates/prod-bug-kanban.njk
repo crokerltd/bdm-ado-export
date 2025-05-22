@@ -11,7 +11,7 @@
 
 {% block item %}
 <div class="kanban-item kanban-item-{{ item.priority }}">
-  {{ kanbanItemHeader(item) }}
+  {{ kanbanItemHeader(item, global) }}
   {{ kanbanItemField( "Assigned", item.assignedTo.displayName ) }}
   {{ kanbanItemField( "Priority", item.priority ) }}
   {{ kanbanItemField( "Release", item.iterationPath | shrinkProdIterationPath, item.iterationPath !== "BDC\\OAS\\Production" ) }}

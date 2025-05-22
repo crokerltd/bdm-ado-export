@@ -6,7 +6,7 @@
 <div class="kanban-relatedworkitems-container">
   {% for child in relatedItems %}
    <div class="kanban-relatedworkitems-item {{ style }}">
-    {{ child.workitem.workItemType }} {{ child.workitem.state }} {{ common.workItemIdTitle(child) }}  [{{ child.workitem.assignedTo.displayName }}]
+    {{ child.workitem.workItemType }} {{ child.workitem.state }} {{ common.workItemIdTitle(child, global) }}  [{{ child.workitem.assignedTo.displayName }}]
    </div>
    {% endfor %}
 </div>
@@ -22,9 +22,9 @@
 {% endif %}
 {% endmacro %}
 
-{% macro kanbanItemHeader(item) %}
+{% macro kanbanItemHeader(item, global) %}
 <div class="kanban-item-header">
-  {{ kanbanWorkItemLink(item) }} {{ item.title }}
+  {{ common.workItemIdHref(item, global) }} {{ item.title }}
 </div>
 {% endmacro %}
 
