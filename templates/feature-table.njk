@@ -1,0 +1,33 @@
+{% import "common.njk" as common %}
+{% set project_id = "EI-on-BDM" %}
+
+<HTML>
+    <HEAD>
+        <TITLE>
+            EI Release 3 Features
+        </TITLE>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/global.css"/>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/ado-bowtie/style.css"/>
+        <LINK REL="stylesheet" TYPE="text/css" HREF="./assets/feature-table.css"/>
+    </HEAD>
+    <BODY>
+        <H1>
+            EI Release 3 Features
+        </H1>
+        <TABLE class="striped">
+            <TR class="headings">
+                <TD>Id</TD>
+                <TD>Title</TD>
+                <TD>Description</TD>
+            </TR>
+            
+            {% for item in items %}
+                <TR>
+                    <TD>{{ common.workItemIdHref(item, true) }}</TD>
+                    <TD>{{ item.title }}</TD>
+                    <TD>{{ item.description | cleanHtml | truncate(1000) }}</TD>
+                </TR>
+            {% endfor %}
+    </TABLE>
+    </BODY>
+</HTML>

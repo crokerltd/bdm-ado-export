@@ -1,48 +1,45 @@
-import { WalkedNode } from "./Walker";
-import { BaseWorkItem } from "./BaseWorkItem";
-import { ADOWorkItem, ADOWorkItemBaseFields, WorkItemFactoryIf, isADOWorkItem } from "./types";
+import { WalkedNode } from "../ado/Walker";
+import { BaseWorkItem } from "../ado/BaseWorkItem";
+import { ADOWorkItem, WorkItemFactoryIf, isADOWorkItem } from "../ado/types";
+import { ADOWorkItemFeatureFields, Feature, isADOFeatureWorkItem } from "../ado/Feature";
 
-export function isADOFeatureWorkItem(x: any): x is ADOWorkItem<ADOWorkItemFeatureFields> {
-    return isADOWorkItem(x) && x.fields["System.WorkItemType"] === "Feature" && isADOWorkItemFeatureFields(x.fields)
+export function isOASFeatureWorkItem(x: any): x is ADOWorkItem<OASWorkItemFeatureFields> {
+    return isADOWorkItem(x) && x.fields["System.WorkItemType"] === "Feature" && isADOFeatureWorkItem(x) && isOASWorkItemFeatureFields(x.fields)
 }
 
-export interface ADOWorkItemFeatureFields extends ADOWorkItemBaseFields {
+export interface OASWorkItemFeatureFields extends ADOWorkItemFeatureFields {
     "Custom.FeatureCategory2"?: string;
     "Custom.Release"?: string;
     "Custom.PlannedDevSprint_OAS"?: string;
     "Custom.FeatureSource"?: string;
-    "Microsoft.VSTS.Common.AcceptanceCriteria"?: string;
     "Custom.Assumptions"?: string;
 }
 
-export function isADOWorkItemFeatureFields(x: any): x is ADOWorkItemFeatureFields {
+export function isOASWorkItemFeatureFields(x: any): x is OASWorkItemFeatureFields {
     const result = {
         category: (x["Custom.FeatureCategory2"] === undefined || typeof x["Custom.FeatureCategory2"] === "string"),
         release: (x["Custom.Release"] === undefined || typeof x["Custom.Release"] === "string"),
         plannedSprint: (x["Custom.PlannedDevSprint_OAS"] === undefined || typeof x["Custom.PlannedDevSprint_OAS"] === "string"),
         featureSource: (x["Custom.FeatureSource"] === undefined || typeof x["Custom.FeatureSource"] === "string"),
-        acceptanceCriteria: (x["Microsoft.VSTS.Common.AcceptanceCriteria"] === undefined || typeof x["Microsoft.VSTS.Common.AcceptanceCriteria"] === "string"),
         assumptions: (x["Custom.Assumptions"] === undefined || typeof x["Custom.Assumptions"] === "string")
     }
     return Object.values(result).every(x => x)
 }
 
-export class Feature extends BaseWorkItem {
+export class OASFeature extends Feature {
 
     featureCategory?: string;
     release?: string;
     plannedDevSprintOAS?: string;
     featureSource?: string;
-    acceptanceCriteria?: string;
     assumptions?: string;
 
-    constructor(data: ADOWorkItem<ADOWorkItemFeatureFields>, factory: WorkItemFactoryIf, leafNode?: boolean) {
+    constructor(data: ADOWorkItem<OASWorkItemFeatureFields>, factory: WorkItemFactoryIf, leafNode?: boolean) {
         super(data, factory, leafNode);
         this.featureCategory = data.fields["Custom.FeatureCategory2"];
         this.release = data.fields["Custom.Release"];
         this.plannedDevSprintOAS = data.fields["Custom.PlannedDevSprint_OAS"];
         this.featureSource = data.fields["Custom.FeatureSource"];
-        this.acceptanceCriteria = data.fields["Microsoft.VSTS.Common.AcceptanceCriteria"];
         this.assumptions = data.fields["Custom.Assumptions"];
     }
 

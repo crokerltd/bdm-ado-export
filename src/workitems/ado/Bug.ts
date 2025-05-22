@@ -6,16 +6,12 @@ export function isADOBugWorkItem(x: any): x is ADOWorkItem<ADOWorkItemBugFields>
 }
 
 export interface ADOWorkItemBugFields extends ADOWorkItemBaseFields {
-    "Custom.Workaround"?: string;
-    "Custom.Partner"?: string;
     "Microsoft.VSTS.TCM.ReproSteps"?: string;
 }
 
 export function isADOWorkItemBugFields(x: any): x is ADOWorkItemBugFields {
     const result = {
-        workaround: (x["Custom.Workaround"] === undefined || typeof x["Custom.Workaround"] === "string"),
-        reproSteps: (x["Microsoft.VSTS.TCM.ReproSteps"] === undefined || typeof x["Microsoft.VSTS.TCM.ReproSteps"] === "string"),
-        partner:  (x["Custom.Partner"] === undefined || typeof x["Custom.Partner"] === "string"),
+        partner:  (x["Custom.Partner"] === undefined || typeof x["Custom.Partner"] === "string")
     }
     return Object.values(result).every(x => x)
 }
@@ -31,11 +27,8 @@ export class Bug extends BaseWorkItem {
 
     constructor(data: ADOWorkItem<ADOWorkItemBugFields>, factory: WorkItemFactoryIf, leafNode?: boolean) {
         super(data, factory, leafNode);
-        this.workaround = data.fields["Custom.Workaround"];
         this.reproSteps= data.fields["Microsoft.VSTS.TCM.ReproSteps"];
-        this.partner = data.fields["Custom.Partner"];
     }
-
 }
 
 /*

@@ -1,4 +1,4 @@
-import { AdoWit } from "../ado/AdoWit";
+import { AdoWit } from "../../ado/AdoWit";
 import { ADOWorkItem, ADOWorkItemComment } from "./types";
 import { Level } from 'level'
 import { createHash } from "crypto";

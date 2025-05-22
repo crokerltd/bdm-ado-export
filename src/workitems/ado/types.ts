@@ -1,7 +1,4 @@
 import { BaseWorkItem } from "./BaseWorkItem";
-import { Bug } from "./Bug";
-import { Feature } from "./Feature";
-import { HybridStory } from "./HybridStory";
 
 export interface WorkItemFactoryIf {
     getByWiql(wiqlWhereClause: string): Promise<WorkItem[]>;
@@ -10,7 +7,7 @@ export interface WorkItemFactoryIf {
     getWorkItemComments(id: number): Promise<ADOWorkItemComment[]>;
 }
 
-export type WorkItem = BaseWorkItem | Feature | HybridStory | Bug;
+export type WorkItem = BaseWorkItem;
 
 export interface ADOWorkItem<F extends ADOWorkItemBaseFields = ADOWorkItemBaseFields> {
     id: number;

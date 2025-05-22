@@ -1,8 +1,9 @@
-import { WorkItemFactory } from "./workitems/WorkItemFactory";
+
 import { exportProdBugs } from "./reports/exportProdBugs";
-import { exportFeatures } from "./reports/exportFeatures";
+import { exportOASFeatures } from "./reports/exportOASFeatures";
+import { exportEIFeatures } from "./reports/exportEIFeatures";
 import { exportProdTracking } from "./reports/exportProdTracking";
-import { WorkItemCache } from "./workitems/WorkItemCache";
+import { WorkItemCache } from "./workitems/ado/WorkItemCache";
 
 /**
  * Main function
@@ -31,9 +32,9 @@ import { WorkItemCache } from "./workitems/WorkItemCache";
     cache.useCache.write = false;
   }
 
-  if (process.argv.includes('features')) {
+  if (process.argv.includes('oas-features')) {
     console.log('exporting features');
-    await exportFeatures();
+    await exportOASFeatures();
   }
 
   if (process.argv.includes('prod-bugs')) {
@@ -44,6 +45,11 @@ import { WorkItemCache } from "./workitems/WorkItemCache";
   if (process.argv.includes('prod-if')) {
     console.log('exporting production tracking interfaces');
     await exportProdTracking();
+  }
+
+  if (process.argv.includes('ei-features')) {
+    console.log('exporting EI Features');
+    await exportEIFeatures();
   }
 
   await cache.close()

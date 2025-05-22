@@ -1,7 +1,6 @@
 import { BaseWorkItem } from "./BaseWorkItem";
 import { Bug, isADOBugWorkItem } from "./Bug";
 import { Feature, isADOFeatureWorkItem } from "./Feature";
-import { HybridStory } from "./HybridStory";
 import { ADOWorkItem, ADOWorkItemComment, WorkItem, WorkItemFactoryIf, isADOWorkItem } from "./types";
 import { WorkItemCache } from "./WorkItemCache";
 
@@ -36,12 +35,7 @@ export class WorkItemFactory implements WorkItemFactoryIf {
         } else if (isADOBugWorkItem(data)) {
             return new Bug(data, this);
         } else if (isADOWorkItem(data)) {
-            switch (data.fields["System.WorkItemType"]) {
-                case 'Hybrid Story':
-                    return new HybridStory(data, this);
-                default:
-                    return new BaseWorkItem(data, this);
-            }
+            return new BaseWorkItem(data, this);
         } else {
             // Record format has failed
             console.error('Data does not comply with BaseWorkItem')

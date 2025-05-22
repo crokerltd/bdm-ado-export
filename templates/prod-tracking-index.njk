@@ -1,4 +1,5 @@
 {% import "common.njk" as common %}
+{% set project_id = "BDC" %}
 
 <HTML>
     <HEAD>
@@ -31,7 +32,7 @@
                 <TR>
                     <TD>{{ common.workItemIdHref(item, true) }}</TD>
                     <TD>{{ item.title }}</TD>
-                    <TD>{{ item.commnets[0] | cleanHtml }}</TD>
+                    <TD>{{ item.comments[0].text | cleanHtml }}</TD>
                     <TD>{{ item.assignedTo.displayName }}</TD>
                     <TD>{{ item.aprilComplete | okBlank }}</TD>
                     <TD>{{ item.mayComplete | okBlank }}</TD>

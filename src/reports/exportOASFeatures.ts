@@ -1,7 +1,7 @@
 import { njk, writeFile } from "../utils";
 import { Walker, WorkItem, WorkItemFactory } from "../workitems";
 
-export async function exportFeatures() {
+export async function exportOASFeatures() {
     const factory = new WorkItemFactory();
     const features = (await factory.getByWiql(`
       [System.WorkItemType] == "Feature"

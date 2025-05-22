@@ -1,28 +1,23 @@
-import { AdoWit } from "../ado/AdoWit";
 import { njk, writeFile } from "../utils";
-import { ADOWorkItem, Bug, RelatedWorkItem, Walker, WorkItem, WorkItemFactory, isADOBugWorkItem } from "../workitems";
-
+import { ADOWorkItem, OASBug, Walker, WorkItem, WorkItemFactory, isOASBugWorkItem } from "../workitems";
 
 class ProdTrackingItemFactory extends WorkItemFactory {
   protected convert(data?: ADOWorkItem): WorkItem | undefined {
-    if (isADOBugWorkItem(data)) {
-      return new Bug(data, this, true);
+    if (isOASBugWorkItem(data)) {
+      return new OASBug(data, this, true);
     } else {
       return super.convert(data)
     }
   }
 }
 
-
 export async function exportProdTracking() {
-
-  const x = AdoWit.getInstance()
   const factory = new ProdTrackingItemFactory();
   const items = (await factory.getByWiql(`
       [System.WorkItemType] == "Tracking Activity"
       AND [System.AreaPath] UNDER 'BDC\\OAS\\OAS Operations'
       AND [System.State] <> "Removed"
-      AND [System.IterationPath] UNDER 'BDC\\OAS\\R3'
+      AND ( [System.IterationPath] UNDER 'BDC\\OAS\\R3' OR [System.IterationPath] UNDER 'BDC\\OAS\\Production' )
     `));
   const walker = new Walker<WorkItem>();
   await walker.walk(items);

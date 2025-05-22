@@ -1,5 +1,5 @@
-import { njk } from "../utils/njk";
-import { writeFile } from "../utils/utils";
+import { njk } from "../../utils/njk";
+import { writeFile } from "../../utils/utils";
 import { WalkedNode } from "./Walker";
 import { ADOWorkItem, ADOWorkItemComment, ADOWorkItemRel, WorkItem, WorkItemFactoryIf } from "./types";
 
@@ -86,7 +86,7 @@ export class BaseWorkItem implements WalkedNode<BaseWorkItem> {
         await this.getComments();
         await this.getRelatedWorkItems();
         await writeFile(await this.render(), `workitems/${this.id}.html`);
-        // await writeFile(JSON.stringify(feature), `out/feature-${feature.id}.json`);
+        await writeFile(JSON.stringify(this.data), `workitems/${this.id}.json`);
     }
 
     async getRelatedWorkItems(): Promise<RelatedWorkItem[]> {
