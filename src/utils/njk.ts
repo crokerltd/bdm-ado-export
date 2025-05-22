@@ -1,5 +1,6 @@
 import * as nunjucks from 'nunjucks';
 import { BaseWorkItem, RelatedWorkItem } from '../workitems';
+import { getEnv } from './utils';
 
 /**
  * Use a njk template to render a string
@@ -8,7 +9,12 @@ import { BaseWorkItem, RelatedWorkItem } from '../workitems';
  * @param context  Context data for the njk template generation
  * @returns        Rendered string
  */
-export async function njk(template: string, context: object = {}, mod?: (e: nunjucks.Environment) => void): Promise<string> {
+export async function njk(template: string, context: any = {}, mod?: (e: nunjucks.Environment) => void): Promise<string> {
+    context.core = {
+        projectId:  getEnv("ADO_API_PROJECT"),
+        orgId: getEnv("ADO_API_ORG")
+    }
+
     return new Promise<string>(async (resolve, reject) => {
         nunjucks.configure({
             autoescape: false
