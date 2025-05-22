@@ -8,8 +8,14 @@ export class WorkItemFactory implements WorkItemFactoryIf {
 
     protected workitemCache: WorkItemCache = WorkItemCache.getInstance()
 
+    constructor(
+        public readonly projectId: string
+    ) {
+        // Do nothing
+    }
+
     async getByWiql(wiqlWhereClause: string): Promise<WorkItem[]> {
-        const adoWorkItems = await this.workitemCache.getByWiql(wiqlWhereClause)
+        const adoWorkItems = await this.workitemCache.getByWiql(this.projectId, wiqlWhereClause)
         return adoWorkItems.map(i => this.convert(i)) as WorkItem[];
     }
 
@@ -17,11 +23,11 @@ export class WorkItemFactory implements WorkItemFactoryIf {
     async getById(id: number[]): Promise<(WorkItem)[]>;
     async getById(id: number | number[]): Promise<WorkItem | undefined | WorkItem[]> {
         if (Array.isArray(id)) {
-            const adoWorkItems = await this.workitemCache.getById(id)
+            const adoWorkItems = await this.workitemCache.getById(this.projectId, id)
             return adoWorkItems.map(i => this.convert(i)) as WorkItem[];
 
         } else {
-            const adoWorkItem = await this.workitemCache.getById(id)
+            const adoWorkItem = await this.workitemCache.getById(this.projectId, id)
             return this.convert(adoWorkItem);
         }
     }
@@ -44,7 +50,7 @@ export class WorkItemFactory implements WorkItemFactoryIf {
     }
 
     getWorkItemComments(id: number): Promise<ADOWorkItemComment[]> {
-        return this.workitemCache.getWorkItemComments(id);
+        return this.workitemCache.getWorkItemComments(this.projectId, id);
     }
 
 }

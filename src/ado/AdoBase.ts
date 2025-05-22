@@ -8,7 +8,6 @@ export abstract class AdoBase {
     private webApi: undefined | adoApi.WebApi;
 
     constructor(
-        readonly projectId: string = getEnv("ADO_API_PROJECT"),
         readonly orgId: string = getEnv("ADO_API_ORG"),
         protected readonly token: string = getEnv("ADO_API_TOKEN")
     ) {
@@ -23,7 +22,7 @@ export abstract class AdoBase {
         return this.webApi;
     }
 
-    protected async execOData(path: string, query: string, ver: string = 'v4.0-preview'): Promise<any> {
+    protected async execOData(path: string, projectId:string, query: string, ver: string = 'v4.0-preview'): Promise<any> {
 
         const encodeURIComponentStrict = (str: string) =>
             encodeURIComponent(str).replace(
@@ -34,7 +33,7 @@ export abstract class AdoBase {
         const encodedUrl = encodeURI(path) + '?%24apply=' + encodeURIComponentStrict(query.trim().replace(/[ \n]+/g, '+')).replace(/%2B/g, '+');
 
         const results = await fetch(
-            `https://analytics.dev.azure.com/${this.orgId}/${this.projectId}/_odata/${ver}/${encodedUrl}`,
+            `https://analytics.dev.azure.com/${this.orgId}/${projectId}/_odata/${ver}/${encodedUrl}`,
             {
                 method: 'GET',
                 headers: {

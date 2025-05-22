@@ -1,7 +1,7 @@
 import { njk, writeFile } from "../utils";
-import { ADOWorkItem, OASBug, Walker, WorkItem, WorkItemFactory, isOASBugWorkItem } from "../workitems";
+import { ADOWorkItem, OASBug, OASWorkItemFactory, Walker, WorkItem, isOASBugWorkItem } from "../workitems";
 
-class ProdTrackingItemFactory extends WorkItemFactory {
+class ProdTrackingItemFactory extends OASWorkItemFactory {
   protected convert(data?: ADOWorkItem): WorkItem | undefined {
     if (isOASBugWorkItem(data)) {
       return new OASBug(data, this, true);

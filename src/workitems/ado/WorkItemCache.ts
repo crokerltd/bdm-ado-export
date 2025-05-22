@@ -5,7 +5,7 @@ import { createHash } from "crypto";
 
 export class WorkItemCache {
 
-    private static instance: WorkItemCache ;
+    private static instance: WorkItemCache;
     public static getInstance(): WorkItemCache {
         if (!WorkItemCache.instance) {
             WorkItemCache.instance = new WorkItemCache();
@@ -39,41 +39,41 @@ export class WorkItemCache {
         }
     }
 
-    async getByWiql(wiqlWhereClause: string): Promise<ADOWorkItem[]> {
-        const ids = await this.getIdsFromWiqlFromLocal(wiqlWhereClause)
-        return this.getById(ids);
+    async getByWiql(projectId: string, wiqlWhereClause: string): Promise<ADOWorkItem[]> {
+        const ids = await this.getIdsFromWiqlFromLocal(projectId, wiqlWhereClause)
+        return this.getById(projectId, ids);
     }
 
-    private async getIdsFromWiqlFromLocal(wiqlWhereClause: string): Promise<number[]> {
+    private async getIdsFromWiqlFromLocal(projectId: string, wiqlWhereClause: string): Promise<number[]> {
         const key = createHash('md5').update(wiqlWhereClause).digest('hex')
-        var result: number[] | undefined = (this.useCache.wiql) ? await this.db.get(`wiqi-${key}`) : undefined;
+        var result: number[] | undefined = (this.useCache.wiql) ? await this.db.get(`wiqi-${projectId}-${key}`) : undefined;
         if (result === undefined) {
-            result = await this.getIdsFromWiqlFromADO(wiqlWhereClause)
+            result = await this.getIdsFromWiqlFromADO(projectId, wiqlWhereClause)
             if (this.useCache.write) {
-                await this.db.put(`wiqi-${key}`, result);
+                await this.db.put(`wiqi-${projectId}-${key}`, result);
             }
         }
         return result;
     }
 
-    private async getIdsFromWiqlFromADO(wiqlWhereClause: string): Promise<number[]> {
+    private async getIdsFromWiqlFromADO(projectId: string, wiqlWhereClause: string): Promise<number[]> {
         console.log('fetching wiql from ADO:', wiqlWhereClause)
         const adoWit = AdoWit.getInstance();
-        return adoWit.adoGetIdsFromWiql(`
+        return adoWit.adoGetIdsFromWiql(projectId, `
         SELECT [System.Id]
         FROM workitems
         WHERE ${wiqlWhereClause}`
         );
     }
 
-    async getById(id: number): Promise<ADOWorkItem | undefined>;
-    async getById(id: number[]): Promise<(ADOWorkItem)[]>;
-    async getById(id: number | number[]): Promise<ADOWorkItem | undefined | ADOWorkItem[]> {
+    async getById(projectId: string,id: number): Promise<ADOWorkItem | undefined>;
+    async getById(projectId: string,id: number[]): Promise<(ADOWorkItem)[]>;
+    async getById(projectId: string,id: number | number[]): Promise<ADOWorkItem | undefined | ADOWorkItem[]> {
         if (Array.isArray(id)) {
             if (id.length === 0) {
                 return [];
             }
-            const fetchResult = await this.getByIdFromLocal(id.filter(i => !this.workitemCache.has(i)));
+            const fetchResult = await this.getByIdFromLocal(projectId, id.filter(i => !this.workitemCache.has(i)));
             for (const i of fetchResult.filter(i => i !== undefined)) {
                 this.workitemCache.set(i.id, i);
             }
@@ -83,7 +83,7 @@ export class WorkItemCache {
 
         } else {
             if (!this.workitemCache.has(id)) {
-                const result = await this.getByIdFromLocal(id);
+                const result = await this.getByIdFromLocal(projectId, id);
                 if (result !== undefined) {
                     this.workitemCache.set(id, result);
                 }
@@ -92,23 +92,23 @@ export class WorkItemCache {
         }
     }
 
-    private async getByIdFromLocal(id: number): Promise<ADOWorkItem | undefined>;
-    private async getByIdFromLocal(id: number[]): Promise<(ADOWorkItem)[]>;
-    private async getByIdFromLocal(id: number | number[]): Promise<ADOWorkItem | undefined | ADOWorkItem[]> {
+    private async getByIdFromLocal(projectId: string,id: number): Promise<ADOWorkItem | undefined>;
+    private async getByIdFromLocal(projectId: string,id: number[]): Promise<(ADOWorkItem)[]>;
+    private async getByIdFromLocal(projectId: string,id: number | number[]): Promise<ADOWorkItem | undefined | ADOWorkItem[]> {
         if (Array.isArray(id)) {
 
             const temp: { [key: number]: ADOWorkItem | undefined } = {}
 
             var cacheResults: (ADOWorkItem | undefined)[] = [];
             if (this.useCache.workitems) {
-                cacheResults = await this.db.getMany(id.map(x => `workitem-${x}`))
+                cacheResults = await this.db.getMany(id.map(x => `wi-${projectId}-${x}`))
                 id.forEach((v, i) => { temp[v] = cacheResults[i] })
             } else {
                 cacheResults = id.map(i => undefined)
             }
 
             const fetchIds = id.filter((v, i) => cacheResults[i] === undefined) as number[]
-            const fetchResults = await this.getByIdFromADO(fetchIds);
+            const fetchResults = await this.getByIdFromADO(projectId, fetchIds);
             fetchIds.forEach((v, i) => { temp[v] = fetchResults[i] })
 
             if (this.useCache.write) {
@@ -117,7 +117,7 @@ export class WorkItemCache {
                         if (fetchResults[i] !== undefined) {
                             return {
                                 type: 'put',
-                                key: `workitem-${v}`,
+                                key: `wi-${projectId}-${v}`,
                                 value: fetchResults[i]
                             }
                         }
@@ -129,10 +129,10 @@ export class WorkItemCache {
                 .map(i => temp[i])
                 .filter(i => i !== undefined) as ADOWorkItem[];
         } else {
-            const strId: string = `workitem-${id}`
+            const strId: string = `wi-${projectId}-${id}`
             var result: ADOWorkItem | undefined = (this.useCache.workitems) ? await this.db.get(strId) : undefined;
             if (result === undefined) {
-                result = await this.getByIdFromADO(id);
+                result = await this.getByIdFromADO(projectId, id);
                 if (result !== undefined && this.useCache.write) {
                     await this.db.put(strId, result);
                 }
@@ -140,15 +140,16 @@ export class WorkItemCache {
         }
     }
 
-    private async getByIdFromADO(id: number): Promise<ADOWorkItem | undefined>;
-    private async getByIdFromADO(id: number[]): Promise<ADOWorkItem[]>;
-    private async getByIdFromADO(id: number | number[]): Promise<ADOWorkItem | undefined | ADOWorkItem[]> {
+    private async getByIdFromADO(projectId: string, id: number): Promise<ADOWorkItem | undefined>;
+    private async getByIdFromADO(projectId: string, id: number[]): Promise<ADOWorkItem[]>;
+    private async getByIdFromADO(projectId: string, id: number | number[]): Promise<ADOWorkItem | undefined | ADOWorkItem[]> {
         if (Array.isArray(id) && id.length === 0) {
             return [];
         }
         console.log('fetching workitems from ADO:', id)
         const adoWit = AdoWit.getInstance();
         const workItems = await adoWit.getWorkItems(
+            projectId,
             Array.isArray(id) ? id : [id]
             // , this.fields
         );
@@ -159,20 +160,20 @@ export class WorkItemCache {
         }
     }
 
-    async getWorkItemComments(id: number): Promise<ADOWorkItemComment[]> {
+    async getWorkItemComments(projectId: string, id: number): Promise<ADOWorkItemComment[]> {
         var result = this.commentCache.get(id);
         if (result === undefined) {
-            result = await this.getWorkItemCommentsFromLocal(id);
+            result = await this.getWorkItemCommentsFromLocal(projectId, id);
             this.commentCache.set(id, result);
         }
         return result;
     }
 
-    private async getWorkItemCommentsFromLocal(id: number): Promise<ADOWorkItemComment[]> {
-        const strId: string = `comments-${id}`
+    private async getWorkItemCommentsFromLocal(projectId: string, id: number): Promise<ADOWorkItemComment[]> {
+        const strId: string = `wic-${projectId}-${id}`
         var result: ADOWorkItemComment[] | undefined = (this.useCache.comments) ? await this.db.get(strId) : undefined;
         if (result === undefined) {
-            result = await this.getWorkItemCommentsFromADO(id);
+            result = await this.getWorkItemCommentsFromADO(projectId, id);
             if (result !== undefined && this.useCache.write) {
                 await this.db.put(strId, result);
             }
@@ -180,10 +181,10 @@ export class WorkItemCache {
         return result;
     }
 
-    private async getWorkItemCommentsFromADO(id: number): Promise<ADOWorkItemComment[]> {
+    private async getWorkItemCommentsFromADO(projectId: string, id: number): Promise<ADOWorkItemComment[]> {
         console.log('fetching comments from ADO:', id)
         const adoWit = AdoWit.getInstance();
-        return (await adoWit.getWorkItemComments(id)).comments || [];
+        return (await adoWit.getWorkItemComments(projectId, id)).comments || [];
     }
 
 }

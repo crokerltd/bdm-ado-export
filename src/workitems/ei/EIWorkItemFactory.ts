@@ -4,6 +4,10 @@ import { EIFeature, isEIFeatureWorkItem } from "./EIFeature";
 
 export class EIWorkItemFactory extends WorkItemFactory {
 
+    constructor() {
+        super('EI-on-BDM')
+    }
+    
     protected convert(data?: ADOWorkItem): WorkItem | undefined {
         if (isEIFeatureWorkItem(data)) {
             return new EIFeature(data, this);

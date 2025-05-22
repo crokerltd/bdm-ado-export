@@ -12,7 +12,7 @@ import { AssigneeWorkItemData, QueryResults } from '../types';
  * @param cc         Array of tfIds to CC
  * @param onlySendTo Filter to apply prior to sending emails
  */
-export async function groupAndSendToAssignees(template: string, data: QueryResults, cc: string[] = [], onlySendTo?: string[]): Promise<void> {
+export async function groupAndSendToAssignees(projectId: string, template: string, data: QueryResults, cc: string[] = [], onlySendTo?: string[]): Promise<void> {
 
     const adoWit = AdoWit.getInstance();
 
@@ -21,7 +21,7 @@ export async function groupAndSendToAssignees(template: string, data: QueryResul
 
     // Group work items by assignee, filter each data property by assignee's work items
     // And then send an email to each assignee, using the specified template
-    groupWorkItemsByAssignee(await adoWit.getWorkItems(workItemIds)).forEach(async assignee => {
+    groupWorkItemsByAssignee(await adoWit.getWorkItems(projectId, workItemIds)).forEach(async assignee => {
 
         // Filter each data property by assignee's work items
         // The data object is added to the context for njk rendering
@@ -37,6 +37,7 @@ export async function groupAndSendToAssignees(template: string, data: QueryResul
             if (onlySendTo === undefined || onlySendTo.includes(assignee.id)) {
                 console.log('Sending email', assignee);
                 await sendWorkItemEmail(
+                    projectId,
                     `ADO Test Email: ${assignee.name}`,
                     template,
                     assignee,
@@ -80,13 +81,13 @@ export function groupWorkItemsByAssignee(workItems: any): AssigneeWorkItemData[]
  * @param cc       Array of tfIds to CC
  */
 export async function sendWorkItemEmail(
+    projectId: string,
     subject: string,
     template: string,
     data: AssigneeWorkItemData,
     cc: string[] = []
 ): Promise<void> {
     const adoWit = AdoWit.getInstance();
-    const projectId = adoWit.projectId;
     const mailBody: SendMailBody = {
         message: {
             to: {
@@ -109,7 +110,7 @@ export async function sendWorkItemEmail(
         projectId
     }
 
-    await adoWit.sendMail(mailBody);
+    await adoWit.sendMail(projectId, mailBody);
 }
 
 

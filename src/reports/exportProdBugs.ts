@@ -1,8 +1,8 @@
 import { njk, writeFile } from "../utils";
-import { Walker, WorkItem, WorkItemFactory } from "../workitems";
+import { OASWorkItemFactory, Walker, WorkItem } from "../workitems";
 
 export async function exportProdBugs() {
-    const factory = new WorkItemFactory();
+    const factory = new OASWorkItemFactory();
     const bugs = (await factory.getByWiql(`
       [System.WorkItemType] == 'Bug'
       AND [Microsoft.VSTS.Common.Priority] IN ( 1, 2 )

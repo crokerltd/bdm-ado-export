@@ -9,17 +9,17 @@ export class AdoWit extends AdoBase {
 
     private static instance: AdoWit;
 
-    static getInstance(projectId?: string, orgId?: string, token?: string) {
+    static getInstance(orgId?: string, token?: string) {
         if (!AdoWit.instance) {
-            AdoWit.instance = new AdoWit(projectId, orgId, token);
+            AdoWit.instance = new AdoWit(orgId, token);
         }
         return AdoWit.instance;
     }
 
     private witClient: undefined | IWorkItemTrackingApi;
 
-    private constructor(projectId?: string, orgId?: string, token?: string) {
-        super(projectId, orgId, token);
+    private constructor(orgId?: string, token?: string) {
+        super(orgId, token);
     }
 
     async getWorkItemIcons() {
@@ -28,16 +28,16 @@ export class AdoWit extends AdoBase {
         console.log(result)    
     }
 
-    async getAllTags(): Promise<any> {
+    async getAllTags(projectId: string): Promise<any> {
         const witApi: IWorkItemTrackingApi = await this.getWitClient();
-        const result = await witApi.getTags(this.projectId);
+        const result = await witApi.getTags(projectId);
         return result.map(e => e.name);
     }
 
-    async adoGetIdsFromWiql(query: string): Promise<number[]> {
+    async adoGetIdsFromWiql(projectId: string, query: string): Promise<number[]> {
         const witApi: IWorkItemTrackingApi = await this.getWitClient();
         // run wiql query
-        const result = await witApi.queryByWiql({ query }, { projectId: this.projectId });
+        const result = await witApi.queryByWiql({ query }, { projectId });
         return (result?.workItems || []).map(e => e.id).filter(e => e !== undefined) as number[];
     }
 
@@ -47,22 +47,21 @@ export class AdoWit extends AdoBase {
      * @param asOf (optional) date asOf which information is to be retrieved
      * @returns    Array of WorkItems
      */
-    async getWorkItems(workItemIds: number[], fields?: string[], asOf?: Date): Promise<any> {
+    async getWorkItems(projectId: string, workItemIds: number[], fields?: string[], asOf?: Date): Promise<any> {
         // Map this into an array of number
         const batchedWorkItems = chunkArray(workItemIds, 200);
 
         const workItems: any[] = [];
         await Promise.all(batchedWorkItems.map(async ids => {
-            workItems.push(...await this.getWorkItemsBatch(ids, fields, asOf));
+            workItems.push(...await this.getWorkItemsBatch(projectId, ids, fields, asOf));
         }));
         return workItems;
     }
 
 
-
-    async listWorkItemFields(workItemType: string) {
+    async listWorkItemFields(projectId: string, workItemType: string) {
         const witApi: IWorkItemTrackingApi = await this.getWitClient();
-        const fields = await witApi.getWorkItemTypeFieldsWithReferences(this.projectId, workItemType);
+        const fields = await witApi.getWorkItemTypeFieldsWithReferences(projectId, workItemType);
         return fields;
     }
 
@@ -73,7 +72,7 @@ export class AdoWit extends AdoBase {
      * @param asOf (optional) date asOf which information is to be retrieved
      * @returns    An array of expanded WorkItems
      */
-    private async getWorkItemsBatch(ids: number[], fields?: string[], asOf?: Date): Promise<any> {
+    private async getWorkItemsBatch(projectId: string, ids: number[], fields?: string[], asOf?: Date): Promise<any> {
         if (ids === null || ids === undefined) {
             throw new Error('ids must be defined');
         }
@@ -84,7 +83,8 @@ export class AdoWit extends AdoBase {
                 fields,
                 asOf,
                 (fields !== undefined) ? undefined : WorkItemExpand.All,
-                WorkItemErrorPolicy.Omit
+                WorkItemErrorPolicy.Omit,
+                projectId
             );
             return items.filter(e => e);
         } catch (e) {
@@ -92,7 +92,7 @@ export class AdoWit extends AdoBase {
         }
     }
 
-    async getWorkItemSnapshot(): Promise<any> {
+    async getWorkItemSnapshot(projectId: string): Promise<any> {
         // const result = await this.execOData(`/WorkItemSnapshot?%24apply=filter%28+WorkItemType+eq+%27Bug%27+and+State+ne+%27Closed%27+and+startswith%28Iteration%2FIterationPath%2C%27BDC%5COAS%5CR2%27%29+and+DateValue+ge+2024-01-01Z+%29+%2Fgroupby%28+%28DateValue%29%2C+aggregate%28+%24count+as+Count%2C+cast%28State++eq+%27Active%27%2C+Edm.Int32%29+with+sum+as+Active%2C+cast%28State++eq+%27Blocked%27%2C+Edm.Int32%29+with+sum+as+Blocked%2C+cast%28State+eq+%27New%27%2C+Edm.Int32%29+with+sum+as+New%2C+cast%28State+eq+%27Resolved%27%2C+Edm.Int32%29+with+sum+as+Resolved+%29+%29`);
         const result = await this.execOData('WorkItemSnapshot', `
         filter(
@@ -111,18 +111,18 @@ export class AdoWit extends AdoBase {
                 cast(State eq 'Resolved', Edm.Int32) with sum as Resolved
                 )
             )
-        `);
+        `, projectId);
         return result;
     }
 
-    async getWorkItemComments(workItemId: number): Promise<any> {
+    async getWorkItemComments( projectId: string, workItemId: number): Promise<any> {
         const witApi: IWorkItemTrackingApi = await this.getWitClient();
-        return await witApi.getComments(this.projectId, workItemId);
+        return await witApi.getComments(projectId, workItemId);
     }
 
-    async sendMail(message: SendMailBody) {
+    async sendMail( projectId: string, message: SendMailBody) {
         const witApi: IWorkItemTrackingApi = await this.getWitClient();
-        await witApi.sendMail(message, this.projectId);
+        await witApi.sendMail(message, projectId);
     }
 
     private async getWitClient(): Promise<IWorkItemTrackingApi> {

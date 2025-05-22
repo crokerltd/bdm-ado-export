@@ -1,8 +1,8 @@
 import { njk, writeFile } from "../utils";
-import { Walker, WorkItem, WorkItemFactory } from "../workitems";
+import { OASWorkItemFactory, Walker, WorkItem } from "../workitems";
 
 export async function exportOASFeatures() {
-    const factory = new WorkItemFactory();
+    const factory = new OASWorkItemFactory();
     const features = (await factory.getByWiql(`
       [System.WorkItemType] == "Feature"
       AND [System.State] <> "Removed"

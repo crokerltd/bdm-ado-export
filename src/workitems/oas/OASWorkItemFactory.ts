@@ -6,6 +6,10 @@ import { ADOWorkItem, WorkItem, isADOWorkItem } from "../ado/types";
 
 export class OASWorkItemFactory extends WorkItemFactory {
 
+    constructor() {
+        super('BDC')
+    }
+
     protected convert(data?: ADOWorkItem): WorkItem | undefined {
         if (isOASFeatureWorkItem(data)) {
             return new OASFeature(data, this);

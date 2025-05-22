@@ -11,9 +11,9 @@ export class AdoTest extends AdoBase {
 
     private static instance: AdoTest;
 
-    static getInstance(projectId?: string, orgId?: string, token?: string) {
+    static getInstance(orgId?: string, token?: string) {
         if (!AdoTest.instance) {
-            AdoTest.instance = new AdoTest(projectId, orgId, token);
+            AdoTest.instance = new AdoTest(orgId, token);
         }
         return AdoTest.instance;
     }
@@ -21,30 +21,30 @@ export class AdoTest extends AdoBase {
     private testResultsApi: undefined | ITestResultsApi;
     private testPlansApi: undefined | ITestPlanApi;
 
-    private constructor(projectId?: string, orgId?: string, token?: string) {
-        super(projectId, orgId, token);
+    private constructor(orgId?: string, token?: string) {
+        super(orgId, token);
     }
 
-    async getTestResults(testRunId: number): Promise<TestCaseResult[]> {
+    async getTestResults(projectId: string, testRunId: number): Promise<TestCaseResult[]> {
         const testApi: ITestResultsApi = await this.getTestResultsApi();
-        const results = await testApi.getTestResults(this.projectId, testRunId);
+        const results = await testApi.getTestResults(projectId, testRunId);
         return results;
     }
 
-    async getTestRuns(planId: number): Promise<TestRun[]> {
+    async getTestRuns(projectId: string, planId: number): Promise<TestRun[]> {
         const testApi: ITestResultsApi = await this.getTestResultsApi();
-        const runs = await testApi.getTestRuns(this.projectId, undefined, undefined, undefined, planId);
-        testApi.getTestRunStatistics(this.projectId, planId);
+        const runs = await testApi.getTestRuns(projectId, undefined, undefined, undefined, planId);
+        testApi.getTestRunStatistics(projectId, planId);
         return runs;
     }
 
-    async getTestRunSummaryByOutcome(planId: number): Promise<TestRunStatistic> {
+    async getTestRunSummaryByOutcome(projectId: string, planId: number): Promise<TestRunStatistic> {
         const testApi: ITestResultsApi = await this.getTestResultsApi();
-        return await testApi.getTestRunSummaryByOutcome(this.projectId, planId);
+        return await testApi.getTestRunSummaryByOutcome(projectId, planId);
     }
 
-    async getTestResultsDaily(planId: number): Promise<any> {
-        const result = await this.execOData('TestPointHistorySnapshot', `
+    async getTestResultsDaily(projectId: string, planId: number): Promise<any> {
+        const result = await this.execOData(projectId, 'TestPointHistorySnapshot', `
             filter(DateSK ge 20240101 and TestSuite/TestPlanId eq ${planId})
             /groupby( 
                 (DateSK),  
@@ -61,25 +61,25 @@ export class AdoTest extends AdoBase {
         return result;
     }
 
-    async getTestPlans(): Promise<TestPlan[]> {
+    async getTestPlans(projectId: string): Promise<TestPlan[]> {
         const testApi: ITestPlanApi = await this.getTestPlanApi();
         const runs: TestPlan[] = [];
-        let page = await testApi.getTestPlans(this.projectId);
+        let page = await testApi.getTestPlans(projectId);
         page.forEach(i => runs.push(i));
         while (page.continuationToken) {
-            page = await testApi.getTestPlans(this.projectId, page.continuationToken);
+            page = await testApi.getTestPlans(projectId, page.continuationToken);
             page.forEach(i => runs.push(i));
         }
         return runs;
     }
 
-    async getTestSuitesForPlan(planId: number): Promise<TestSuite[]> {
+    async getTestSuitesForPlan(projectId: string, planId: number): Promise<TestSuite[]> {
         const testApi: ITestPlanApi = await this.getTestPlanApi();
         const suites: TestSuite[] = [];
-        let page = await testApi.getTestSuitesForPlan(this.projectId, planId, undefined);
+        let page = await testApi.getTestSuitesForPlan(projectId, planId, undefined);
         page.forEach(i => suites.push(i));
         while (page.continuationToken) {
-            page = await testApi.getTestSuitesForPlan(this.projectId, planId, undefined, page.continuationToken);
+            page = await testApi.getTestSuitesForPlan(projectId, planId, undefined, page.continuationToken);
             page.forEach(i => suites.push(i));
         }
         return suites;
