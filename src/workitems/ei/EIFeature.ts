@@ -2,7 +2,7 @@ import { ADOWorkItem, WorkItemFactoryIf, isADOWorkItem } from "../ado/types";
 import { ADOWorkItemFeatureFields, Feature, isADOFeatureWorkItem } from "../ado/Feature";
 
 export function isEIFeatureWorkItem(x: any): x is ADOWorkItem<EIWorkItemFeatureFields> {
-    return isADOWorkItem(x) && x.fields["System.WorkItemType"] === "Feature" && isADOFeatureWorkItem(x) && isEIWorkItemFeatureFields(x.fields)
+    return isADOFeatureWorkItem(x) && isEIWorkItemFeatureFields(x.fields)
 }
 
 export interface EIWorkItemFeatureFields extends ADOWorkItemFeatureFields {

@@ -2,7 +2,7 @@ import { ADOWorkItemBugFields, Bug, isADOBugWorkItem } from "../ado/Bug";
 import { ADOWorkItem, WorkItemFactoryIf, isADOWorkItem } from "../ado/types";
 
 export function isOASBugWorkItem(x: any): x is ADOWorkItem<OASWorkItemBugFields> {
-    return isADOWorkItem(x) && x.fields["System.WorkItemType"] === "Bug" &&  isADOBugWorkItem(x) && isOASWorkItemBugFields(x.fields)
+    return isADOBugWorkItem(x) && isOASWorkItemBugFields(x.fields)
 }
 
 export interface OASWorkItemBugFields extends ADOWorkItemBugFields {

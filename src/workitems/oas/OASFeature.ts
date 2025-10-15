@@ -4,7 +4,7 @@ import { ADOWorkItem, WorkItemFactoryIf, isADOWorkItem } from "../ado/types";
 import { ADOWorkItemFeatureFields, Feature, isADOFeatureWorkItem } from "../ado/Feature";
 
 export function isOASFeatureWorkItem(x: any): x is ADOWorkItem<OASWorkItemFeatureFields> {
-    return isADOWorkItem(x) && x.fields["System.WorkItemType"] === "Feature" && isADOFeatureWorkItem(x) && isOASWorkItemFeatureFields(x.fields)
+    return isADOFeatureWorkItem(x) && isOASWorkItemFeatureFields(x.fields)
 }
 
 export interface OASWorkItemFeatureFields extends ADOWorkItemFeatureFields {
